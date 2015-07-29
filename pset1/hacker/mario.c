@@ -1,3 +1,8 @@
+/*
+ * mario.c - Pset1 hacker edition
+ *
+ */
+
 #include <stdio.h>
 #include <cs50.h>
 
@@ -17,12 +22,16 @@ int main(void)
 
     for(int i = 0; i < height; i++)
     {
+        // the base of the pyramid is twice the height with a 
+        // gap of 2 spaces in between
         for(int j = 0; j < ((height * 2) + GAP_WIDTH); j++)
         {
             int printStart = height - i - 1;
             int printEnd = height + i + GAP_WIDTH;
 
-            if (j >= printStart && j <= printEnd && j != height && j != (height + 1))
+            // print # when in the correct zone
+            if (j >= printStart && j <= printEnd 
+                    && j != height && j != (height + 1))
             {
                 printf("#");
             }
