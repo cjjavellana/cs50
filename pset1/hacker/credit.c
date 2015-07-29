@@ -15,7 +15,7 @@ static char* asString(long long cardNumber);
  * Returns VIA if c is 4
  * Returns INVALID if c is neither of the above three.
  */
-static char* getCardProvider(char* cardNumber);
+static char* getProvider(char* cardNumber);
 
 #define VISA 4
 
@@ -52,12 +52,11 @@ int main(void)
             }
             else
             {
-                int product = digit * 2;
                 // if product exceeds 9, add the digits together
+                int product = digit * 2;
                 checkSum += (product > 9) ? (product % 10) + 1 : product;
             }
             cardNumber /= 10;
-
             index++;
         }
 
@@ -68,9 +67,10 @@ int main(void)
         }
         else
         {
-            printf("%s\n", getCardProvider(sCardNo));
-            free(sCardNo);
+            printf("%s\n", getProvider(sCardNo));
         }
+        
+        free(sCardNo);
     }
 }
 
@@ -81,28 +81,28 @@ static char* asString(long long cardNumber)
     return temp;
 }
 
-static char* getCardProvider(char* cardNumber)
+static char* getProvider(char* cardNumber)
 {
     char buff[2];
 
     buff[0] = *(cardNumber);
     buff[1] = '\0';
 
-    int c = atoi(buff);
-    if (c == VISA)
+    int cardId = atoi(buff);
+    if (cardId == VISA)
     {
         return "VISA";
     }
 
     sprintf(buff, "%c%c", *(cardNumber), *(cardNumber + 1));
-    c = atoi(buff);
+    cardId = atoi(buff);
 
-    if (c == 34 || c == 37)
+    if (cardId == 34 || cardId == 37)
     {
         return "AMEX";
     }
 
-    if (c >= 51 && c <= 55)
+    if (cardId >= 51 && cardId <= 55)
     {
         return "MASTERCARD";
     }
