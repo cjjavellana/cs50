@@ -53,7 +53,7 @@ int main(void)
             else
             {
                 // if product exceeds 9, add the digits together
-                int product = digit * 2;
+                int product = (digit << 1);                
                 checkSum += (product > 9) ? (product % 10) + 1 : product;
             }
             cardNumber /= 10;
@@ -76,7 +76,10 @@ int main(void)
 
 static char* asString(long long cardNumber)
 {
+    // allocate a buffer to hold the long long credit card number
     char *temp = malloc(sizeof(char) * 16);
+
+    // convert the long long credit card number to string
     sprintf(temp, "%lld", cardNumber);
     return temp;
 }
@@ -85,15 +88,19 @@ static char* getProvider(char* cardNumber)
 {
     char buff[2];
 
+    //take the first digit (or character) and assign to buff[0]
     buff[0] = *(cardNumber);
     buff[1] = '\0';
 
+    // convert to integer & check if it is visa (card number starts with 4)
     int cardId = atoi(buff);
     if (cardId == VISA)
     {
         return "VISA";
     }
 
+    // card is not visa, now we need to read the first two
+    // digits of the credit
     sprintf(buff, "%c%c", *(cardNumber), *(cardNumber + 1));
     cardId = atoi(buff);
 
