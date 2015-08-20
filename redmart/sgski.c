@@ -1,3 +1,4 @@
+// required; otherwise clang will complain that getline has not been declared
 #define _XOPEN_SOURCE 700
 
 #include <stdio.h>
@@ -26,11 +27,11 @@ int main(int argc, char* argv[]) {
 
     int *colCount = malloc(sizeof(int));
     int *rowCount = malloc(sizeof(int));
-
-    readfile(colCount, rowCount, ifp);
+    int** matrix = readfile(colCount, rowCount, ifp);
 
     free(colCount);
     free(rowCount);
+    free(matrix);
     fclose(ifp);
 
     return 0;
