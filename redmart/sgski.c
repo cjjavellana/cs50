@@ -7,9 +7,15 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-static int** initMatrix(char*, int*, int*);
+typedef struct {
+    int **matrix;
+    int rowCount;
+    int colCount;
+} matrix;
 
-static int** readfile(int*, int*, FILE*);
+static void initMatrix(matrix *m, char* line);
+static void readfile(matrix *m, FILE* fp);
+static void readline(matrix *matrix, char* line);
 
 int main(int argc, char* argv[]) {
 
@@ -25,64 +31,62 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    int *colCount = malloc(sizeof(int));
-    int *rowCount = malloc(sizeof(int));
-    int** matrix = readfile(colCount, rowCount, ifp);
+    matrix *m = malloc(sizeof(matrix));
 
-    free(colCount);
-    free(rowCount);
-    free(matrix);
+    // read the input file into the matrix
+    readfile(m, ifp);
+
+    free(m);
     fclose(ifp);
 
     return 0;
 }
 
-static int** readfile(int* colCount, int* rowCount, FILE* fp) {
+static void readfile(matrix *m, FILE* fp) {
     int isFirstRow = 1;
     size_t len = 0;
     size_t read;
     char *line;
     
-    int **matrix = NULL;
-    
     while ((read = getline(&line, &len, fp) != -1)) {
         if (isFirstRow) {
             // the first row of the input file
             // contains the size of the matrix.
-            matrix = initMatrix(line, rowCount, colCount);
+            initMatrix(m, line);
             isFirstRow = 0;
         } else {
-
+            readline(m, line);
         }
     }
-    
-    return matrix;
 }
 
 /**
  * Reads the size of the matrix from the first line of the input file and 
- * sets the row and column counts into the parameters *rowCount and *colCount.
- * 
- * This function returns a two-dimentional array of size rowCount * colCount.
+ * sets the row and column counts into the parameters rowCount and colCount 
+ * attributes of matrix m.
  *
  * This function is to be called on the first line of the input file.
- *
- * Ensure to free() the matrix after use.
  */
-static int** initMatrix(char* line, int* rowCount, int* colCount) {
+static void initMatrix(matrix *m, char* line) {
+
     // reads the row count - the first value on the line string
     char *ch = strtok(line, " ");
-    *rowCount = atoi(ch);
+    m->rowCount = atoi(ch);
     
     // reads the column count - the second value on the line string
     ch = strtok(NULL, " ");
-    *colCount = atoi(ch);
+    m->colCount = atoi(ch);
       
     // initialize a two-dimentional array of size rowCount * columnCount
-    int** matrix = (int **) malloc(sizeof(int *) * *rowCount);
-    for(int i = 0; i < *rowCount; i++) {
-       matrix[i] = (int *) malloc(sizeof(int) * *colCount); 
+    int** matrix = (int **) malloc(sizeof(int *) * m->rowCount);
+    for(int i = 0; i < m->rowCount; i++) {
+       matrix[i] = (int *) malloc(sizeof(int) * m->colCount); 
     }
-    
-    return matrix;
+   
+    m->matrix = matrix;    
 }
+
+static void readline(matrix *m, char* line) {
+
+}
+
