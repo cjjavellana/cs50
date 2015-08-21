@@ -13,8 +13,10 @@ typedef struct {
 } matrix;
 
 static void initMatrix(matrix *m, char* line);
-static void readfile(matrix *m, FILE* fp);
-static void readline(matrix *matrix, char* line);
+static void readline(matrix *m, char* line, int rowIndex);
+
+void showContents(matrix *m);
+void readfile(matrix *m, FILE* fp);
 
 int main(int argc, char* argv[]) {
 
@@ -35,28 +37,31 @@ int main(int argc, char* argv[]) {
     // read the input file into the matrix
     readfile(m, ifp);
     printf("Row Size: %d, Col Size: %d\n", m->rowCount, m->colCount);
-
+    showContents(m);
+    
+    // release resources
     free(m);
     fclose(ifp);
 
     return 0;
 }
 
-static void readfile(matrix *m, FILE* fp) {
-    int isFirstRow = 1;
+void readfile(matrix *m, FILE* fp) {
+    int rowIndex = 0;
     size_t len = 0;
     size_t read;
     char *line;
     
     while ((read = getline(&line, &len, fp) != -1)) {
-        if (isFirstRow) {
+        if (rowIndex == 0) {
             // the first row of the input file
             // contains the size of the matrix.
             initMatrix(m, line);
-            isFirstRow = 0;
         } else {
-            readline(m, line);
+            readline(m, line, rowIndex);
         }
+
+        rowIndex++;
     }
 }
 
@@ -86,7 +91,25 @@ static void initMatrix(matrix *m, char* line) {
     m->matrix = matrix;    
 }
 
-static void readline(matrix *m, char* line) {
+static void readline(matrix *m, char* line, int rowIndex) {
+    int colIndex = 0;
+    char *ch = strtok(line, " ");
 
+    while(ch != NULL) {
+        m->matrix[rowIndex - 1][colIndex] = atoi(ch);
+        ch = strtok(NULL, " ");
+        colIndex++;
+    }
 }
 
+/**
+ * Prints the contents of the matrix into the console
+ */
+void showContents(matrix *m) {
+    for(int i = 0; i < m->rowCount; i++) {
+        for (int j = 0; j < m->colCount; j++) {
+            printf("%d ", m->matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
