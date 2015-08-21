@@ -12,11 +12,29 @@ typedef struct {
     int colCount;
 } matrix;
 
+typedef struct {
+    char* solution;
+    int distance;
+    int drop;
+} solution;
+
+typedef struct {
+    int row;
+    int col;
+} cellIndex;
+
+// input file reading routines
+void readfile(matrix *m, FILE* fp);
 static void initMatrix(matrix *m, char* line);
 static void readline(matrix *m, char* line, int rowIndex);
 
+// solution finder
+void findSkiPath(matrix *m, solution *sol);
+static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
+void evaluateSolution(solution *sol, char* path);
+
+// miscellaneous routines
 void showContents(matrix *m);
-void readfile(matrix *m, FILE* fp);
 
 int main(int argc, char* argv[]) {
 
@@ -44,6 +62,91 @@ int main(int argc, char* argv[]) {
     fclose(ifp);
 
     return 0;
+}
+
+void findSkiPath(matrix *m, solution *sol) {
+    for (int i = 0; i < m->rowCount; i++) {
+        for (int j = 0; j < m->colCount; j++) {
+            int value = m->matrix[i][j];
+            char* path = malloc(sizeof(char) * 50);
+            sprintf(path, "%d ", value);
+            
+            cellIndex index;
+            
+            // check east
+            index.row = i;
+            index.col = j + 1;
+            checkAdjacentCells(path, m, index, sol, value);
+
+            // check west
+            index.row = i;
+            index.col = j - 1;
+            checkAdjacentCells(path, m, index, sol, value);
+
+            // check north 
+            index.row = i - 1;
+            index.col = j;
+            checkAdjacentCells(path, m, index, sol, value);
+
+            // check south
+            index.row = i + 1;
+            index.col = j;
+            checkAdjacentCells(path, m, index, sol, value);
+            
+            free(path);
+        }
+    }    
+}
+
+static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution *sol, int currentValue) {
+
+    // The base case - If we go beyond the limits of the matrix
+    if(index.row < 0 || index.row > m->rowCount
+            || index.col < 0 || index.col > m->colCount) {
+        evaluateSolution(sol, path);
+        return;
+    }
+
+    // check if the next cell has a lower value than the current cell
+    int val = m->matrix[index.row][index.col];
+    if(val < currentValue) {
+        char *ch = malloc(sizeof(char) * 33);
+        sprintf(ch, "%d ", val);
+        strcat(path, ch);
+
+        int r = index.row, c = index.col;
+
+        // check east
+        index.row = r;
+        index.col = c + 1;
+        checkAdjacentCells(path, m, index, sol, val);
+
+        // check west
+        index.row = r;
+        index.col = c - 1;
+        checkAdjacentCells(path, m, index, sol, val);
+
+        // check north 
+        index.row = r - 1;
+        index.col = c;
+        checkAdjacentCells(path, m, index, sol, val);
+
+        // check south
+        index.row = r + 1;
+        index.col = c;
+        checkAdjacentCells(path, m, index, sol, val);
+    }
+
+    // all ajacent cells have bigger value then the current cell
+    evaluateSolution(sol, path);
+    return;
+}
+
+/**
+ * Checks if the longest path with the steepest drop has been found.
+ */
+void evaluateSolution(solution *sol, char* path) {
+
 }
 
 void readfile(matrix *m, FILE* fp) {
