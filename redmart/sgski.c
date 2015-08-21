@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stddef.h>
 
 typedef struct {
     int **matrix;
@@ -35,6 +34,7 @@ int main(int argc, char* argv[]) {
 
     // read the input file into the matrix
     readfile(m, ifp);
+    printf("Row Size: %d, Col Size: %d\n", m->rowCount, m->colCount);
 
     free(m);
     fclose(ifp);
