@@ -60,8 +60,6 @@ int main(int argc, char* argv[]) {
 
     // read the input file into the matrix
     readfile(m, ifp);
-    //printf("Row Size: %d, Col Size: %d\n", m->rowCount, m->colCount);
-    //showContents(m);
     findSkiPath(m, sol);
 
     printf("Ski Path: %s; Distance: %d; Drop: %d\n", sol->solution, sol->distance, sol->drop);
@@ -244,6 +242,12 @@ static void readline(matrix *m, char* line, int rowIndex) {
     char *ch = strtok(line, " ");
 
     while(ch != NULL) {
+        int val = atoi(ch);
+        if(val > 9999) {
+            printf("Invalid input file. Cannot have value greater than 9999\n");
+            exit(EXIT_FAILURE);
+        }
+
         m->matrix[rowIndex - 1][colIndex] = atoi(ch);
         ch = strtok(NULL, " ");
         colIndex++;
