@@ -30,8 +30,8 @@ static void readline(matrix *m, char* line, int rowIndex);
 
 // solution finder
 void findSkiPath(matrix *m, solution *sol);
-static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
-void evaluateSolution(solution *sol, char* path);
+static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
+void evaluateSolution(solution *sol, const char* path);
 
 // miscellaneous routines
 void showContents(matrix *m);
@@ -50,14 +50,24 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // initialize the solution structure
+    solution *sol = malloc(sizeof(solution));
+    sol->solution = NULL;
+    sol->distance = 0;
+    sol->drop = 0;
+
     matrix *m = malloc(sizeof(matrix));
 
     // read the input file into the matrix
     readfile(m, ifp);
-    printf("Row Size: %d, Col Size: %d\n", m->rowCount, m->colCount);
-    showContents(m);
-    
+    //printf("Row Size: %d, Col Size: %d\n", m->rowCount, m->colCount);
+    //showContents(m);
+    findSkiPath(m, sol);
+
+    printf("Ski Path: %s; Distance: %d; Drop: %d\n", sol->solution, sol->distance, sol->drop);
+
     // release resources
+    free(sol);
     free(m);
     fclose(ifp);
 
@@ -76,7 +86,7 @@ void findSkiPath(matrix *m, solution *sol) {
             // check east
             index.row = i;
             index.col = j + 1;
-            checkAdjacentCells(path, m, index, sol, value);
+            checkAdjacentCells((const char*) path, m, index, sol, value);
 
             // check west
             index.row = i;
@@ -98,11 +108,11 @@ void findSkiPath(matrix *m, solution *sol) {
     }    
 }
 
-static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution *sol, int currentValue) {
+static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue) {
 
     // The base case - If we go beyond the limits of the matrix
-    if(index.row < 0 || index.row > m->rowCount
-            || index.col < 0 || index.col > m->colCount) {
+    if(index.row < 0 || index.row > (m->rowCount - 1) 
+            || index.col < 0 || index.col > (m->colCount - 1)) {
         evaluateSolution(sol, path);
         return;
     }
@@ -110,31 +120,34 @@ static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution 
     // check if the next cell has a lower value than the current cell
     int val = m->matrix[index.row][index.col];
     if(val < currentValue) {
-        char *ch = malloc(sizeof(char) * 33);
+        char* newPath = malloc(sizeof(char) * strlen(path));
+        strcpy(newPath, path);
+
+        char *ch = malloc(sizeof(char) * (5 + 1)); // support upto 4-digit value and \0 (string terminator)
         sprintf(ch, "%d ", val);
-        strcat(path, ch);
+        strcat(newPath, ch);
 
         int r = index.row, c = index.col;
 
         // check east
         index.row = r;
         index.col = c + 1;
-        checkAdjacentCells(path, m, index, sol, val);
+        checkAdjacentCells((const char*) newPath, m, index, sol, val);
 
         // check west
         index.row = r;
         index.col = c - 1;
-        checkAdjacentCells(path, m, index, sol, val);
+        checkAdjacentCells((const char*) newPath, m, index, sol, val);
 
         // check north 
         index.row = r - 1;
         index.col = c;
-        checkAdjacentCells(path, m, index, sol, val);
+        checkAdjacentCells((const char*) newPath, m, index, sol, val);
 
         // check south
         index.row = r + 1;
         index.col = c;
-        checkAdjacentCells(path, m, index, sol, val);
+        checkAdjacentCells((const char*) newPath, m, index, sol, val);
     }
 
     // all ajacent cells have bigger value then the current cell
@@ -145,8 +158,34 @@ static void checkAdjacentCells(char* path, matrix *m, cellIndex index, solution 
 /**
  * Checks if the longest path with the steepest drop has been found.
  */
-void evaluateSolution(solution *sol, char* path) {
+void evaluateSolution(solution *sol, const char* path) {
+    // split the string by the space delimiter
+    int distance = 1;
+    char *dropTemp[2];
+    dropTemp[0] = strtok(strdup(path), " ");
+    char* end = dropTemp[1] = strdup(dropTemp[0]);
 
+    while ((end = strtok(NULL, " ")) != NULL) {
+        dropTemp[1] = end;
+        distance++;
+    }
+
+    if(distance < sol->distance) {
+        return;
+    }
+
+    int drop = atoi(dropTemp[0]) - atoi(dropTemp[1]);
+    
+    if (sol->solution == NULL) {
+        sol->solution = malloc(sizeof(char) * 100);
+        strcpy(sol->solution, path);
+        sol->distance = distance;
+        sol->drop = drop;
+    } else if(distance > sol->distance || drop > sol->drop) {
+        strcpy(sol->solution, path);
+        sol->distance = distance;
+        sol->drop = drop;
+    } 
 }
 
 void readfile(matrix *m, FILE* fp) {
