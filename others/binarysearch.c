@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
     
     printf("Before Sort\n");
     printValues(values, dateSetLength); 
-    
-    bubbleSort(values, dateSetLength);
-    
+   
+    //bubbleSort(values, dateSetLength);
+    selectionSort(values, dateSetLength);
     printf("After Sort\n");
     printValues(values, dateSetLength); 
 

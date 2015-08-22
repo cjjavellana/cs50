@@ -22,7 +22,21 @@ void bubbleSort(int *iArray, int arraySize)
 
 void selectionSort(int *iArray, int arraySize)
 {
-
+    for(int i = 0, k = 0; i < arraySize; i++) {
+        int min = *(iArray + i);
+        for(int j = i + 1; j < arraySize; j++) {
+            if(*(iArray + j) < min) {
+               min = *(iArray + j);
+               k = j;
+           }
+        }
+        
+        if(k) {
+            int temp = *(iArray + i);
+            *(iArray + i) = *(iArray + k);
+            *(iArray + k) = temp;
+        }
+    }
 }
 
 void insertionSort(int *iArray, int arraySize)
