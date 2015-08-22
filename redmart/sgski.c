@@ -78,7 +78,7 @@ void findSkiPath(matrix *m, solution *sol) {
     for (int i = 0; i < m->rowCount; i++) {
         for (int j = 0; j < m->colCount; j++) {
             int value = m->matrix[i][j];
-            char* path = malloc(sizeof(char) * 50);
+            char* path = malloc(sizeof(char) * 6);
             sprintf(path, "%d ", value);
             
             cellIndex index;
@@ -86,7 +86,7 @@ void findSkiPath(matrix *m, solution *sol) {
             // check east
             index.row = i;
             index.col = j + 1;
-            checkAdjacentCells((const char*) path, m, index, sol, value);
+            checkAdjacentCells(path, m, index, sol, value);
 
             // check west
             index.row = i;
@@ -102,8 +102,6 @@ void findSkiPath(matrix *m, solution *sol) {
             index.row = i + 1;
             index.col = j;
             checkAdjacentCells(path, m, index, sol, value);
-            
-            free(path);
         }
     }    
 }
@@ -120,12 +118,17 @@ static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, sol
     // check if the next cell has a lower value than the current cell
     int val = m->matrix[index.row][index.col];
     if(val < currentValue) {
-        char* newPath = malloc(sizeof(char) * strlen(path));
+        char* newPath = malloc(sizeof(char) * (strlen(path) + 4 + 1 + 1)); // the 4-digit value + space + \0
         strcpy(newPath, path);
 
         char *ch = malloc(sizeof(char) * (5 + 1)); // support upto 4-digit value and \0 (string terminator)
+        if(ch == NULL) {
+            printf("Unable to allocate memory\n");
+            exit(EXIT_FAILURE);
+        }
         sprintf(ch, "%d ", val);
         strcat(newPath, ch);
+        free(ch);
 
         int r = index.row, c = index.col;
 
@@ -148,6 +151,8 @@ static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, sol
         index.row = r + 1;
         index.col = c;
         checkAdjacentCells((const char*) newPath, m, index, sol, val);
+
+        free(newPath);
     }
 
     // all ajacent cells have bigger value then the current cell
@@ -182,6 +187,7 @@ void evaluateSolution(solution *sol, const char* path) {
         sol->distance = distance;
         sol->drop = drop;
     } else if(distance > sol->distance || drop > sol->drop) {
+        printf("New Solution: %s\n", path);
         strcpy(sol->solution, path);
         sol->distance = distance;
         sol->drop = drop;
