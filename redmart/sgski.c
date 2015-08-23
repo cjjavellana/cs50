@@ -24,13 +24,13 @@ typedef struct {
 
 // input file reading routines
 void readfile(matrix *m, FILE* fp);
-static void initMatrix(matrix *m, char* line);
-static void readline(matrix *m, char* line, int rowIndex);
+void initMatrix(matrix *m, char* line);
+void readline(matrix *m, char* line, int rowIndex);
 
 // solution finder
 void findSkiPath(matrix *m, solution *sol);
-static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
-static void evaluateSolution(solution *sol, const char* path);
+void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
+void evaluateSolution(solution *sol, const char* path);
 
 // miscellaneous routines
 void showContents(matrix *m);
@@ -103,7 +103,7 @@ void findSkiPath(matrix *m, solution *sol) {
     }    
 }
 
-static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue) {
+void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue) {
 
     // The base case - If we go beyond the limits of the matrix
     if(index.row < 0 || index.row > (m->rowCount - 1) 
@@ -160,7 +160,7 @@ static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, sol
 /**
  * Checks if the longest path with the steepest drop has been found.
  */
-static void evaluateSolution(solution *sol, const char* path) {
+void evaluateSolution(solution *sol, const char* path) {
     // split the string by the space delimiter
     int distance = 1;
     char *dropTemp[2];
@@ -217,7 +217,7 @@ void readfile(matrix *m, FILE* fp) {
  *
  * This function is to be called on the first line of the input file.
  */
-static void initMatrix(matrix *m, char* line) {
+void initMatrix(matrix *m, char* line) {
 
     // reads the row count - the first value on the line string
     char *ch = strtok(line, " ");
@@ -236,7 +236,7 @@ static void initMatrix(matrix *m, char* line) {
     m->matrix = matrix;    
 }
 
-static void readline(matrix *m, char* line, int rowIndex) {
+void readline(matrix *m, char* line, int rowIndex) {
     int colIndex = 0;
     char *ch = strtok(line, " ");
 
