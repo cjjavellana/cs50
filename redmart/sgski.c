@@ -1,6 +1,5 @@
 // required; otherwise clang will complain that getline has not been declared
 #define _XOPEN_SOURCE 700
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -13,7 +12,7 @@ typedef struct {
 } matrix;
 
 typedef struct {
-    char* solution;
+    char* solution; 
     int distance;
     int drop;
 } solution;
@@ -31,7 +30,7 @@ static void readline(matrix *m, char* line, int rowIndex);
 // solution finder
 void findSkiPath(matrix *m, solution *sol);
 static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, solution *sol, int currentValue);
-void evaluateSolution(solution *sol, const char* path);
+static void evaluateSolution(solution *sol, const char* path);
 
 // miscellaneous routines
 void showContents(matrix *m);
@@ -161,7 +160,7 @@ static void checkAdjacentCells(const char* path, matrix *m, cellIndex index, sol
 /**
  * Checks if the longest path with the steepest drop has been found.
  */
-void evaluateSolution(solution *sol, const char* path) {
+static void evaluateSolution(solution *sol, const char* path) {
     // split the string by the space delimiter
     int distance = 1;
     char *dropTemp[2];
