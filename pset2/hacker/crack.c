@@ -90,8 +90,11 @@ void bruteForce(char *cipherText)
         *(guess + len) = '\0';
         *(finalState + len) = '\0';
 
+        // do until we've exhausted all possible combinations
+        // of 0x21 "!" to 0x7E ("~") for the length of the key len
         while(strcmp(guess, finalState) != 0)
         {
+            // increment the last character
             int charIndex = len - 1; 
             for(int ch = 0x21; ch < 0x7F; ch++)
             {
@@ -99,20 +102,27 @@ void bruteForce(char *cipherText)
 
                 printf("Testing Out: %s; Salt: %s\n", guess, salt);
 
+                //Encrypt plaintext guess and check if it matches our ciphertext
                 encrypted = crypt(guess, salt);
                 if(strcmp(encrypted, cipherText) == 0)
                 {
-                    goto found;
+                    printf("%s\n", guess);
+                    return; 
                 }
             }
 
-            // increment the character before the last
+            // increment the character(s) before the last
             int idx = charIndex - 1;
             while(idx >= 0)
             {
                 *(guess + idx) = *(guess + idx) + 1;
+
+                //if last character exceeded '~', increment the character before it
                 if(*(guess + idx) > 0x7E)
                 {
+                    // reset last character back to 0x21 "!"
+                    // and increment the character before it until we've reached start
+                    // of guess
                     *(guess + idx) = 0x21;
                     idx--;
                 }
@@ -124,13 +134,11 @@ void bruteForce(char *cipherText)
         }
 
         len++;
+
+        // clean up resources
         free(guess);
         free(finalState);
     }
 
     return;
-
-found:
-    printf("%s\n", encrypted);
-
 }
