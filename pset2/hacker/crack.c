@@ -4,18 +4,11 @@
 #include <string.h>
 #include <unistd.h>
 
-typedef struct 
-{
-    int startLen;
-    int maxLen;
-    char *cipherTextToCrack;
-} bruteForceParam;
-
 void bruteForce(char *cipherText);
 
 int main(int argc, char *argv[])
 {
-    if(argc != 2)
+    if (argc != 2)
     {
         printf("Usage: ./crack <ciphertext>");
         exit(EXIT_FAILURE);
@@ -28,10 +21,9 @@ int main(int argc, char *argv[])
     strcat(grepQuery, argv[1]);
     strcat(grepQuery, "\"");
     strcat(grepQuery, " *.txt");
-    //system(grepQuery);
 
-    FILE *fp = popen(grepQuery, "r");
-    if (fp == NULL)
+    FILE *dictionary = popen(grepQuery, "r");
+    if (dictionary == NULL)
     {
         printf("Unable to run command\n");
         exit(EXIT_FAILURE);
@@ -39,12 +31,12 @@ int main(int argc, char *argv[])
 
     char queryResult[300];
 
-    if (fgets(queryResult, sizeof(queryResult) - 1, fp) != NULL)
+    if (fgets(queryResult, sizeof(queryResult) - 1, dictionary) != NULL)
     {
         // queryResult is in the grep output format:
         // <filename>:<plaintext>=<encrypted value)
         char *plainText = strtok(queryResult, "=:");
-        while(plainText != NULL)
+        while (plainText != NULL)
         {
             plainText = strtok(NULL, "=:");
             printf("%s\n", plainText);
@@ -58,7 +50,7 @@ int main(int argc, char *argv[])
         bruteForce(argv[1]);
     }
 
-    pclose(fp);
+    pclose(dictionary);
 
     return 0;
 }
@@ -71,13 +63,16 @@ void bruteForce(char *cipherText)
     char *encrypted = NULL;
     char *salt = malloc(sizeof(char) * 3);
 
-    strncpy(salt, cipherText, 2);   // copy the first 2 characters from the cipherText
-    strcat(salt, "\0");             // manually add string terminator
+    // copy the first 2 characters from the cipherText
+    strncpy(salt, cipherText, 2);   
+    // manually add string terminator
+    strcat(salt, "\0");             
 
     while(len <= maxChar)
     {
         // initialize guess
-        char *guess = malloc(sizeof(char) * (len + 1));         //length of string + null terminator
+        // +1 for the null terminator 
+        char *guess = malloc(sizeof(char) * (len + 1));         
         char *finalState = malloc(sizeof(char) * (len + 1));
 
         // we start from '!' or 0x21 and we end at '~' or 0x7e
@@ -85,7 +80,7 @@ void bruteForce(char *cipherText)
         for(int i = 0; i < len; i++)
         {
             *(guess + i) = (char) 0x21; 
-            *(finalState + i) =  (char) 0x7E;
+            *(finalState + i) = (char) 0x7E;
         }
         *(guess + len) = '\0';
         *(finalState + len) = '\0';
@@ -96,15 +91,16 @@ void bruteForce(char *cipherText)
         {
             // increment the last character
             int charIndex = len - 1; 
-            for(int ch = 0x21; ch < 0x7F; ch++)
+            for(int nextChar = 0x21; nextChar < 0x7F; nextChar++)
             {
-                *(guess + charIndex) = ch;
+                *(guess + charIndex) = nextChar;
 
                 printf("Testing Out: %s; Salt: %s\n", guess, salt);
 
-                //Encrypt plaintext guess and check if it matches our ciphertext
+                // Encrypt plaintext guess and 
+                // check if it matches our ciphertext
                 encrypted = crypt(guess, salt);
-                if(strcmp(encrypted, cipherText) == 0)
+                if (strcmp(encrypted, cipherText) == 0)
                 {
                     printf("%s\n", guess);
                     return; 
@@ -117,12 +113,13 @@ void bruteForce(char *cipherText)
             {
                 *(guess + idx) = *(guess + idx) + 1;
 
-                //if last character exceeded '~', increment the character before it
-                if(*(guess + idx) > 0x7E)
+                // if last character exceeded '~', increment the 
+                // character before it
+                if (*(guess + idx) > 0x7E)
                 {
                     // reset last character back to 0x21 "!"
-                    // and increment the character before it until we've reached start
-                    // of guess
+                    // and increment the character before 
+                    // it until we've reached start of guess
                     *(guess + idx) = 0x21;
                     idx--;
                 }
