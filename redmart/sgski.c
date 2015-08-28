@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
     // initialize the solution structure
     solution *sol = malloc(sizeof(solution));
-    sol->solution = NULL;
+    sol->solution = malloc(sizeof(char) * 100);
     sol->distance = 0;
     sol->drop = 0;
 
@@ -59,6 +59,10 @@ int main(int argc, char* argv[]) {
 
     // read the input file into the matrix
     readfile(m, ifp);
+
+    // close file after reading
+    fclose(ifp);
+    
     findSkiPath(m, sol);
 
     printf("Ski Path: %s; Distance: %d; Drop: %d\n", sol->solution, sol->distance, sol->drop);
@@ -66,7 +70,6 @@ int main(int argc, char* argv[]) {
     // release resources
     free(sol);
     free(m);
-    fclose(ifp);
 
     return 0;
 }
@@ -177,14 +180,7 @@ void evaluateSolution(solution *sol, const char* path) {
     }
 
     int drop = atoi(dropTemp[0]) - atoi(dropTemp[1]);
-    
-    if (sol->solution == NULL) {
-        sol->solution = malloc(sizeof(char) * 100);
-        strcpy(sol->solution, path);
-        sol->distance = distance;
-        sol->drop = drop;
-    } else if(distance > sol->distance || drop > sol->drop) {
-        printf("New Solution: %s\n", path);
+    if(distance > sol->distance || drop > sol->drop) {
         strcpy(sol->solution, path);
         sol->distance = distance;
         sol->drop = drop;
