@@ -89,7 +89,26 @@ int main(void)
  */
 void initBricks(GWindow window)
 {
-    // TODO
+    char *colors[] = {
+        "RED",
+        "ORANGE",
+        "YELLOW",
+        "GREEN",
+        "0x00FFFF"
+    };
+
+    int brickPadding = 40;
+    int brickWidth = (WIDTH - brickPadding) / 10;
+    for(int i = 0, y = 30; i < ROWS; i++, y += 15)
+    {
+        for(int j = 0, x = 2; j < COLS; j++, x += brickWidth + 4)
+        {
+            GRect brick = newGRect(x, y, brickWidth, 10);
+            setColor(brick, colors[i]);
+            setFilled(brick, true);
+            add(window, brick);
+        }
+    }
 }
 
 /**
@@ -97,8 +116,11 @@ void initBricks(GWindow window)
  */
 GOval initBall(GWindow window)
 {
-    // TODO
-    return NULL;
+    GOval ball = newGOval(WIDTH / 2, HEIGHT / 2, RADIUS * 2, RADIUS * 2);
+    setColor(ball, "BLACK");
+    setFilled(ball, true);
+    add(window, ball);
+    return ball;
 }
 
 /**

@@ -29,14 +29,17 @@ static bool binary_search(int value, int values[], int lower_bound, int upper_bo
     {
         return true;
     }
-        
-    if (value < values[mid])
+
+    if (mid > lower_bound && mid < upper_bound)
     {
-        return binary_search(value, values, lower_bound, mid);
-    }
-    else if(value > values[mid])
-    {
-        return binary_search(value, values, mid, upper_bound);
+        if (value < values[mid])
+        {
+            return binary_search(value, values, lower_bound, mid);
+        }
+        else if(value > values[mid])
+        {
+            return binary_search(value, values, mid, upper_bound);
+        }
     }
 
     return false;
