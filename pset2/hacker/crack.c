@@ -4,7 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
-void bruteForce(char *cipherText);
+void bruteForce(const char *cipherText);
+void initGuessWord(char *guess, char *finalWord, const int len);
 
 int main(int argc, char *argv[])
 {
@@ -55,8 +56,25 @@ int main(int argc, char *argv[])
     return 0;
 }
    
+/**
+ * Sets the initial word and the boundary condition 
+ * to guess and finalWord, respectively
+ */
+void initGuessWord(char *guess, char *finalWord, const int len)
+{
+    // we start from '!' or 0x21 and we end at '~' or 0x7e
+    // refer to the ascii table at http://www.asciitable.com/
+    for(int i = 0; i < len; i++)
+    {
+        *(guess + i) = (char) 0x21; 
+        *(finalWord+ i) = (char) 0x7E;
+    }
+    
+    *(guess + len) = '\0';
+    *(finalWord + len) = '\0';
+}
 
-void bruteForce(char *cipherText)
+void bruteForce(const char *cipherText)
 {
     int len = 1;
     int maxChar = 8;
@@ -75,15 +93,7 @@ void bruteForce(char *cipherText)
         char *guess = malloc(sizeof(char) * (len + 1));         
         char *finalState = malloc(sizeof(char) * (len + 1));
 
-        // we start from '!' or 0x21 and we end at '~' or 0x7e
-        // refer to the ascii table at http://www.asciitable.com/
-        for(int i = 0; i < len; i++)
-        {
-            *(guess + i) = (char) 0x21; 
-            *(finalState + i) = (char) 0x7E;
-        }
-        *(guess + len) = '\0';
-        *(finalState + len) = '\0';
+        initGuessWord(guess, finalState, len);
 
         // do until we've exhausted all possible combinations
         // of 0x21 "!" to 0x7E ("~") for the length of the key len
@@ -95,7 +105,7 @@ void bruteForce(char *cipherText)
             {
                 *(guess + charIndex) = nextChar;
 
-                printf("Testing Out: %s; Salt: %s\n", guess, salt);
+                // printf("Testing Out: %s; Salt: %s\n", guess, salt);
 
                 // Encrypt plaintext guess and 
                 // check if it matches our ciphertext
