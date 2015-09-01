@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 // Stanford Portable Library
 #include <spl/gevents.h>
@@ -33,7 +34,12 @@
 // lives
 #define LIVES 3
 
+// paddle constants
+#define PADDLE_HEIGHT 10
+#define PADDLE_WIDTH 80
+
 // prototypes
+void invertBallAngle(double *ballAngle);
 void initBricks(GWindow window);
 GOval initBall(GWindow window);
 GRect initPaddle(GWindow window);
@@ -70,10 +76,55 @@ int main(void)
     // number of points initially
     int points = 0;
 
+    char *direction = "";
+
+    // default ball direction is down
+    double ballAngle = 90;
+    double velocity = 2.0;
+
+    double ballX = WIDTH / 2 - RADIUS;
+    double ballY = HEIGHT / 2 - RADIUS;
+
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
-        // TODO
+        GObject object = detectCollision(window, ball);
+        if (object != NULL)
+        {
+            if (object == paddle)
+            {
+                invertBallAngle(&ballAngle);
+            }
+            else if (strcmp(getType(object), "GRect") == 0)
+            {
+                invertBallAngle(&ballAngle);
+                removeGWindow(window, object);
+                bricks--;
+            }
+        }
+        else
+        {
+            if (getX(ball) <= 0 
+                    || getX(ball) + getWidth(ball) >= getWidth(window)
+                    || getY(ball) <= 0) 
+            {
+                //velocity = -velocity;
+                invertBallAngle(&ballAngle);
+            }
+            else if (getY(ball) + getHeight(ball) >= getHeight(window))
+            {
+                lives--;
+                removeGWindow(window, ball);
+                ball = initBall(window);
+                paddle = initPaddle(window);
+            }
+        }
+
+        ballX = velocity * cos((ballAngle * M_PI ) / 180);
+        ballY = velocity * sin((ballAngle * M_PI) / 180);
+
+        move(ball, ballX, ballY);
+        pause(10);
     }
 
     // wait for click before exiting
@@ -82,6 +133,23 @@ int main(void)
     // game over
     closeGWindow(window);
     return 0;
+}
+
+void invertBallAngle(double *ballAngle)
+{
+    // straight up or straight down
+    if (*ballAngle == 90 || *ballAngle == 270)
+    {
+        *ballAngle += 180;
+        if (*ballAngle >= 360) 
+        {
+            *ballAngle -= 360;
+        }
+    }
+    else
+    {
+        // at an angle
+    }
 }
 
 /**
@@ -116,7 +184,7 @@ void initBricks(GWindow window)
  */
 GOval initBall(GWindow window)
 {
-    GOval ball = newGOval(WIDTH / 2, HEIGHT / 2, RADIUS * 2, RADIUS * 2);
+    GOval ball = newGOval(WIDTH / 2 - RADIUS, HEIGHT / 2 - RADIUS, RADIUS * 2, RADIUS * 2);
     setColor(ball, "BLACK");
     setFilled(ball, true);
     add(window, ball);
@@ -128,8 +196,14 @@ GOval initBall(GWindow window)
  */
 GRect initPaddle(GWindow window)
 {
-    // TODO
-    return NULL;
+    GRect paddle = newGRect((WIDTH / 2) - (PADDLE_WIDTH / 2), 
+            HEIGHT - PADDLE_HEIGHT - 100, 
+            PADDLE_WIDTH, 
+            PADDLE_HEIGHT);
+    setColor(paddle, "BLACK");
+    setFilled(paddle, true);
+    add(window, paddle);
+    return paddle;
 }
 
 /**
