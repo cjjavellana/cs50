@@ -38,6 +38,9 @@
 #define PADDLE_HEIGHT 10
 #define PADDLE_WIDTH 80
 
+// ball velocity factor
+#define VELOCITY_FACTOR 3.0
+
 // prototypes
 void invertBallAngle(double *ballAngle);
 void initBricks(GWindow window);
@@ -76,28 +79,64 @@ int main(void)
     // number of points initially
     int points = 0;
 
-    char *direction = "";
-
     // default ball direction is down
-    double ballAngle = 90;
-    double velocity = 2.0;
+    double hVelocity= 0.0;
+    double vVelocity= 2.0;
 
-    double ballX = WIDTH / 2 - RADIUS;
-    double ballY = HEIGHT / 2 - RADIUS;
+    char *paddleDirection = malloc(sizeof(char) * 10);
+   
+    double temp = WIDTH / 2;
 
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
+        
+        GEvent event = getNextEvent(MOUSE_EVENT);
+        if (event != NULL)
+        {
+            if (getEventType(event) == MOUSE_MOVED)
+            {
+                double paddleX = getX(event) - getWidth(paddle) / 2;
+                setLocation(paddle, paddleX, HEIGHT - PADDLE_HEIGHT - 100);
+                // mouse moving right
+                if (paddleX > temp)
+                {
+                    strcpy(paddleDirection, "right\0");
+                }
+                else if(paddleX < temp)
+                {
+                    strcpy(paddleDirection, "left\0");
+                }
+
+                temp = paddleX;
+            }
+        }
+
         GObject object = detectCollision(window, ball);
         if (object != NULL)
         {
             if (object == paddle)
             {
-                invertBallAngle(&ballAngle);
+                // determine where do we need to go
+                if (strcmp(paddleDirection, "left") == 0)
+                {
+                    hVelocity = -drand48() * VELOCITY_FACTOR;
+                }
+                else
+                {
+                    hVelocity = drand48() * VELOCITY_FACTOR;
+                }
+                vVelocity = -vVelocity;
+
+                // ensure that the ball clears the paddle
+                // when ball is hit by the paddle on the side
+                // otherwise the ball gets stuck on the paddle
+                move(ball, hVelocity, vVelocity - 5);
             }
             else if (strcmp(getType(object), "GRect") == 0)
             {
-                invertBallAngle(&ballAngle);
+                hVelocity = -hVelocity;
+                vVelocity = -vVelocity;
                 removeGWindow(window, object);
                 bricks--;
             }
@@ -105,25 +144,27 @@ int main(void)
         else
         {
             if (getX(ball) <= 0 
-                    || getX(ball) + getWidth(ball) >= getWidth(window)
-                    || getY(ball) <= 0) 
+                    || getX(ball) + getWidth(ball) >= getWidth(window)) 
             {
-                //velocity = -velocity;
-                invertBallAngle(&ballAngle);
+                hVelocity = -hVelocity;
+            }
+            else if (getY(ball) <= 0)
+            {
+                vVelocity = -vVelocity;
             }
             else if (getY(ball) + getHeight(ball) >= getHeight(window))
             {
+                waitForClick();
                 lives--;
                 removeGWindow(window, ball);
+                removeGWindow(window, paddle);
                 ball = initBall(window);
                 paddle = initPaddle(window);
             }
         }
 
-        ballX = velocity * cos((ballAngle * M_PI ) / 180);
-        ballY = velocity * sin((ballAngle * M_PI) / 180);
 
-        move(ball, ballX, ballY);
+        move(ball, hVelocity, vVelocity);
         pause(10);
     }
 
@@ -133,23 +174,6 @@ int main(void)
     // game over
     closeGWindow(window);
     return 0;
-}
-
-void invertBallAngle(double *ballAngle)
-{
-    // straight up or straight down
-    if (*ballAngle == 90 || *ballAngle == 270)
-    {
-        *ballAngle += 180;
-        if (*ballAngle >= 360) 
-        {
-            *ballAngle -= 360;
-        }
-    }
-    else
-    {
-        // at an angle
-    }
 }
 
 /**
