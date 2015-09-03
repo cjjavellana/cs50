@@ -139,6 +139,10 @@ int main(void)
                 vVelocity = -vVelocity;
                 removeGWindow(window, object);
                 bricks--;
+
+                char *newScore = malloc(sizeof(char) * 2);
+                sprintf(newScore, "%d", (COLS * ROWS) - bricks);
+                setLabel(label, newScore);
             }
         }
         else
@@ -162,7 +166,6 @@ int main(void)
                 paddle = initPaddle(window);
             }
         }
-
 
         move(ball, hVelocity, vVelocity);
         pause(10);
@@ -235,8 +238,13 @@ GRect initPaddle(GWindow window)
  */
 GLabel initScoreboard(GWindow window)
 {
-    // TODO
-    return NULL;
+    GLabel scoreboard = newGLabel("0");
+    setFont(scoreboard, "SansSerif-72");
+    double x = (getWidth(window) - getWidth(scoreboard)) / 2;
+    double y = (getHeight(window) + getFontAscent(scoreboard)) / 2;
+    setLocation(scoreboard, x, y);
+    add(window, scoreboard);
+    return scoreboard;
 }
 
 /**
