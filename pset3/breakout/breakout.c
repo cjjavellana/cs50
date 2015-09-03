@@ -41,8 +41,16 @@
 // ball velocity factor
 #define VELOCITY_FACTOR 3.0
 
+// structures
+typedef struct
+{
+    GRect paddle;
+    char *direction;
+    int xLocation;
+} PaddleMovement;
+
 // prototypes
-void invertBallAngle(double *ballAngle);
+void movePaddle(PaddleMovement *movement);
 void initBricks(GWindow window);
 GOval initBall(GWindow window);
 GRect initPaddle(GWindow window);
@@ -84,33 +92,16 @@ int main(void)
     double vVelocity= 2.0;
 
     char *paddleDirection = malloc(sizeof(char) * 10);
-   
-    double temp = WIDTH / 2;
+  
+    PaddleMovement *paddleMovement = (PaddleMovement *)malloc(sizeof(PaddleMovement));
+    paddleMovement->paddle = paddle;
+    paddleMovement->direction = paddleDirection;
+    paddleMovement->xLocation = WIDTH / 2;
 
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
-        
-        GEvent event = getNextEvent(MOUSE_EVENT);
-        if (event != NULL)
-        {
-            if (getEventType(event) == MOUSE_MOVED)
-            {
-                double paddleX = getX(event) - getWidth(paddle) / 2;
-                setLocation(paddle, paddleX, HEIGHT - PADDLE_HEIGHT - 100);
-                // mouse moving right
-                if (paddleX > temp)
-                {
-                    strcpy(paddleDirection, "right\0");
-                }
-                else if(paddleX < temp)
-                {
-                    strcpy(paddleDirection, "left\0");
-                }
-
-                temp = paddleX;
-            }
-        }
+        movePaddle(paddleMovement); 
 
         GObject object = detectCollision(window, ball);
         if (object != NULL)
@@ -160,10 +151,12 @@ int main(void)
             {
                 waitForClick();
                 lives--;
+                hVelocity = 0.0;
                 removeGWindow(window, ball);
                 removeGWindow(window, paddle);
                 ball = initBall(window);
                 paddle = initPaddle(window);
+                setLabel(label, "0");
             }
         }
 
@@ -177,6 +170,33 @@ int main(void)
     // game over
     closeGWindow(window);
     return 0;
+}
+
+/**
+ * Detects the paddle based on the location of the mouse pointer
+ */
+void movePaddle(PaddleMovement *movement)
+{
+    GEvent event = getNextEvent(MOUSE_EVENT);
+    if (event != NULL)
+    {
+        if (getEventType(event) == MOUSE_MOVED)
+        {
+            double paddleX = getX(event) - getWidth(movement->paddle) / 2;
+            setLocation(movement->paddle, paddleX, HEIGHT - PADDLE_HEIGHT - 100);
+            
+            // mouse moving right
+            if (paddleX > movement->xLocation)
+            {
+                strcpy(movement->direction, "right\0");
+            }
+            else if(paddleX < movement->xLocation)
+            {
+                strcpy(movement->direction, "left\0");
+            }
+            movement->xLocation = paddleX;
+        }
+    }
 }
 
 /**
