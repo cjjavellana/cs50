@@ -239,9 +239,10 @@ GRect initPaddle(GWindow window)
 GLabel initScoreboard(GWindow window)
 {
     GLabel scoreboard = newGLabel("0");
-    setFont(scoreboard, "SansSerif-72");
+    setFont(scoreboard, "SansSerif-48");
     double x = (getWidth(window) - getWidth(scoreboard)) / 2;
     double y = (getHeight(window) + getFontAscent(scoreboard)) / 2;
+    setColor(scoreboard, "0xC0C0C0");
     setLocation(scoreboard, x, y);
     add(window, scoreboard);
     return scoreboard;
