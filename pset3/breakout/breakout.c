@@ -69,6 +69,8 @@ void updateScoreboard(GWindow window, GLabel label, int points);
 GObject detectCollision(GWindow window, GOval ball);
 void invertHorizontalDirection(Velocity *velocity);
 void invertVerticalDirection(Velocity *velocity);
+int hasBallHitTheSides(GOval *ball, GWindow *window);
+int hasBallHitTheTop(GOval *ball, GWindow *window);
 
 int main(void)
 {
@@ -131,12 +133,11 @@ int main(void)
         }
         else
         {
-            if (getX(ball) <= 0 
-                    || getX(ball) + getWidth(ball) >= getWidth(window)) 
+            if (hasBallHitTheSides(&ball, &window))
             {
                 invertHorizontalDirection(velocity);
             }
-            else if (getY(ball) <= 0)
+            else if (hasBallHitTheTop(&ball, &window))
             {
                 invertVerticalDirection(velocity);
             }
@@ -147,9 +148,12 @@ int main(void)
                 velocity->horizontalVelocity = 0.0;
                 removeGWindow(window, ball);
                 removeGWindow(window, paddle);
+                freeGObject(ball);
+                freeGObject(paddle);
+
                 ball = initBall(window);
                 paddle = initPaddle(window);
-                setLabel(label, "0");
+                bat->paddle = paddle;
             }
         }
 
@@ -234,6 +238,33 @@ void ballHitsBrick(Velocity *velocity,
     char *newScore = malloc(sizeof(char) * 2);
     sprintf(newScore, "%d", *score);
     setLabel(*label, newScore);
+}
+
+/**
+ * Returns true if ball has hit the sides. 
+ */
+int hasBallHitTheSides(GOval *ball, GWindow *window)
+{
+    if (getX(*ball) <= 0 ||
+        getX(*ball) + getWidth(*ball) >= getWidth(*window))
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * Returns true if ball has hit the top of the window
+ */
+int hasBallHitTheTop(GOval *ball, GWindow *window)
+{
+    if (getY(*ball) <= 0)
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 /**
