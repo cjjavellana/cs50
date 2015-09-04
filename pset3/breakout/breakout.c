@@ -49,8 +49,15 @@ typedef struct
     int xLocation;
 } PaddleMovement;
 
+typedef struct
+{
+    double horizontalVelocity;
+    double verticalVelocity;
+} Velocity;
+
 // prototypes
-void movePaddle(PaddleMovement *movement);
+void ballHitsPaddle(PaddleMovement *paddle, Velocity *velocity, GOval *ball);
+void checkForEvent(PaddleMovement *movement);
 void initBricks(GWindow window);
 GOval initBall(GWindow window);
 GRect initPaddle(GWindow window);
@@ -88,8 +95,9 @@ int main(void)
     int points = 0;
 
     // default ball direction is down
-    double hVelocity= 0.0;
-    double vVelocity= 2.0;
+    Velocity *velocity = (Velocity *) malloc(sizeof(Velocity));
+    velocity->horizontalVelocity = 0.0;
+    velocity->verticalVelocity = 2.0;
 
     char *paddleDirection = malloc(sizeof(char) * 10);
   
@@ -101,33 +109,19 @@ int main(void)
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
-        movePaddle(paddleMovement); 
+        checkForEvent(paddleMovement); 
 
         GObject object = detectCollision(window, ball);
         if (object != NULL)
         {
             if (object == paddle)
             {
-                // determine where do we need to go
-                if (strcmp(paddleDirection, "left") == 0)
-                {
-                    hVelocity = -drand48() * VELOCITY_FACTOR;
-                }
-                else
-                {
-                    hVelocity = drand48() * VELOCITY_FACTOR;
-                }
-                vVelocity = -vVelocity;
-
-                // ensure that the ball clears the paddle
-                // when ball is hit by the paddle on the side
-                // otherwise the ball gets stuck on the paddle
-                move(ball, hVelocity, vVelocity - 5);
+                ballHitsPaddle(paddleMovement, velocity, ball);
             }
             else if (strcmp(getType(object), "GRect") == 0)
             {
-                hVelocity = -hVelocity;
-                vVelocity = -vVelocity;
+                velocity->horizontalVelocity = -velocity->horizontalVelocity;
+                velocity->verticalVelocity = -velocity->verticalVelocity;
                 removeGWindow(window, object);
                 bricks--;
 
@@ -141,17 +135,17 @@ int main(void)
             if (getX(ball) <= 0 
                     || getX(ball) + getWidth(ball) >= getWidth(window)) 
             {
-                hVelocity = -hVelocity;
+                velocity->horizontalVelocity = -velocity->horizontalVelocity;
             }
             else if (getY(ball) <= 0)
             {
-                vVelocity = -vVelocity;
+                velocity->verticalVelocity = -velocity->verticalVelocity;
             }
             else if (getY(ball) + getHeight(ball) >= getHeight(window))
             {
                 waitForClick();
                 lives--;
-                hVelocity = 0.0;
+                velocity->horizontalVelocity = 0.0;
                 removeGWindow(window, ball);
                 removeGWindow(window, paddle);
                 ball = initBall(window);
@@ -160,7 +154,7 @@ int main(void)
             }
         }
 
-        move(ball, hVelocity, vVelocity);
+        move(ball, velocity->horizontalVelocity, velocity->verticalVelocity);
         pause(10);
     }
 
@@ -175,7 +169,7 @@ int main(void)
 /**
  * Detects the paddle based on the location of the mouse pointer
  */
-void movePaddle(PaddleMovement *movement)
+void checkForEvent(PaddleMovement *movement)
 {
     GEvent event = getNextEvent(MOUSE_EVENT);
     if (event != NULL)
@@ -197,6 +191,25 @@ void movePaddle(PaddleMovement *movement)
             movement->xLocation = paddleX;
         }
     }
+}
+
+void ballHitsPaddle(PaddleMovement *paddle, Velocity *velocity, GOval *ball)
+{
+    // determine where do we need to go
+    if (strcmp(paddle->direction, "left") == 0)
+    {
+        velocity->horizontalVelocity = -drand48() * VELOCITY_FACTOR;
+    }
+    else
+    {
+        velocity->horizontalVelocity = drand48() * VELOCITY_FACTOR;
+    }
+    velocity->verticalVelocity = -velocity->verticalVelocity;
+
+    // ensure that the ball clears the paddle
+    // when ball is hit by the paddle on the side
+    // otherwise the ball gets stuck on the paddle
+    move(ball, velocity->horizontalVelocity, velocity->verticalVelocity - 5);
 }
 
 /**
