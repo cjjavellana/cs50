@@ -46,8 +46,9 @@ typedef struct
 {
     GRect paddle;
     char *direction;
-    int xLocation;
-} PaddleMovement;
+    int x;
+    int y;
+} Paddle;
 
 typedef struct
 {
@@ -56,14 +57,18 @@ typedef struct
 } Velocity;
 
 // prototypes
-void ballHitsPaddle(PaddleMovement *paddle, Velocity *velocity, GOval *ball);
-void checkForEvent(PaddleMovement *movement);
+void ballHitsPaddle(Paddle *paddle, Velocity *velocity, GOval *ball);
+void checkForEvent(Paddle *bat);
+void ballHitsBrick(Velocity *velocity, GWindow *window, GObject *brick, 
+        GLabel *label, int *score, int *bricksCount);
 void initBricks(GWindow window);
 GOval initBall(GWindow window);
 GRect initPaddle(GWindow window);
 GLabel initScoreboard(GWindow window);
 void updateScoreboard(GWindow window, GLabel label, int points);
 GObject detectCollision(GWindow window, GOval ball);
+void invertHorizontalDirection(Velocity *velocity);
+void invertVerticalDirection(Velocity *velocity);
 
 int main(void)
 {
@@ -85,11 +90,11 @@ int main(void)
     // instantiate scoreboard, centered in middle of window, just above ball
     GLabel label = initScoreboard(window);
 
-    // number of bricks initially
-    int bricks = COLS * ROWS;
-
     // number of lives initially
     int lives = LIVES;
+
+    // number of bricks initially
+    int bricks = ROWS * COLS;
 
     // number of points initially
     int points = 0;
@@ -101,33 +106,27 @@ int main(void)
 
     char *paddleDirection = malloc(sizeof(char) * 10);
   
-    PaddleMovement *paddleMovement = (PaddleMovement *)malloc(sizeof(PaddleMovement));
-    paddleMovement->paddle = paddle;
-    paddleMovement->direction = paddleDirection;
-    paddleMovement->xLocation = WIDTH / 2;
+    Paddle *bat = (Paddle *)malloc(sizeof(Paddle));
+    bat->paddle = paddle;
+    bat->direction = paddleDirection;
+    bat->x = getX(paddle);
+    bat->y = getY(paddle);
 
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
-        checkForEvent(paddleMovement); 
+        checkForEvent(bat); 
 
         GObject object = detectCollision(window, ball);
         if (object != NULL)
         {
             if (object == paddle)
             {
-                ballHitsPaddle(paddleMovement, velocity, ball);
+                ballHitsPaddle(bat, velocity, ball);
             }
             else if (strcmp(getType(object), "GRect") == 0)
             {
-                velocity->horizontalVelocity = -velocity->horizontalVelocity;
-                velocity->verticalVelocity = -velocity->verticalVelocity;
-                removeGWindow(window, object);
-                bricks--;
-
-                char *newScore = malloc(sizeof(char) * 2);
-                sprintf(newScore, "%d", (COLS * ROWS) - bricks);
-                setLabel(label, newScore);
+                ballHitsBrick(velocity, &window, &object, &label, &points, &bricks);
             }
         }
         else
@@ -135,11 +134,11 @@ int main(void)
             if (getX(ball) <= 0 
                     || getX(ball) + getWidth(ball) >= getWidth(window)) 
             {
-                velocity->horizontalVelocity = -velocity->horizontalVelocity;
+                invertHorizontalDirection(velocity);
             }
             else if (getY(ball) <= 0)
             {
-                velocity->verticalVelocity = -velocity->verticalVelocity;
+                invertVerticalDirection(velocity);
             }
             else if (getY(ball) + getHeight(ball) >= getHeight(window))
             {
@@ -169,31 +168,34 @@ int main(void)
 /**
  * Detects the paddle based on the location of the mouse pointer
  */
-void checkForEvent(PaddleMovement *movement)
+void checkForEvent(Paddle *bat)
 {
     GEvent event = getNextEvent(MOUSE_EVENT);
     if (event != NULL)
     {
         if (getEventType(event) == MOUSE_MOVED)
         {
-            double paddleX = getX(event) - getWidth(movement->paddle) / 2;
-            setLocation(movement->paddle, paddleX, HEIGHT - PADDLE_HEIGHT - 100);
+            double xCoordinate = getX(event) - getWidth(bat->paddle) / 2;
+            setLocation(bat->paddle, xCoordinate, HEIGHT - PADDLE_HEIGHT - 100);
             
             // mouse moving right
-            if (paddleX > movement->xLocation)
+            if (xCoordinate > bat->x)
             {
-                strcpy(movement->direction, "right\0");
+                strcpy(bat->direction, "right\0");
             }
-            else if(paddleX < movement->xLocation)
+            else if(xCoordinate < bat->x)
             {
-                strcpy(movement->direction, "left\0");
+                strcpy(bat->direction, "left\0");
             }
-            movement->xLocation = paddleX;
+            bat->x = xCoordinate;
         }
     }
 }
 
-void ballHitsPaddle(PaddleMovement *paddle, Velocity *velocity, GOval *ball)
+/**
+ * Changes the direction of the ball when it hits the paddle
+ */
+void ballHitsPaddle(Paddle *paddle, Velocity *velocity, GOval *ball)
 {
     // determine where do we need to go
     if (strcmp(paddle->direction, "left") == 0)
@@ -204,12 +206,54 @@ void ballHitsPaddle(PaddleMovement *paddle, Velocity *velocity, GOval *ball)
     {
         velocity->horizontalVelocity = drand48() * VELOCITY_FACTOR;
     }
-    velocity->verticalVelocity = -velocity->verticalVelocity;
+    invertVerticalDirection(velocity);
 
     // ensure that the ball clears the paddle
     // when ball is hit by the paddle on the side
     // otherwise the ball gets stuck on the paddle
     move(ball, velocity->horizontalVelocity, velocity->verticalVelocity - 5);
+}
+
+/**
+ * Changes the balls direction when it hits a brick.
+ */
+void ballHitsBrick(Velocity *velocity, 
+        GWindow *window, 
+        GObject *brick, 
+        GLabel *label,
+        int *score, 
+        int *bricksCount)
+{
+    invertHorizontalDirection(velocity);
+    invertVerticalDirection(velocity);
+    removeGWindow(*window, *brick);
+    freeGObject(*brick);
+    (*score)++;
+    (*bricksCount)--;
+
+    char *newScore = malloc(sizeof(char) * 2);
+    sprintf(newScore, "%d", *score);
+    setLabel(*label, newScore);
+}
+
+/**
+ * Changes the sign of the horizontal velocity, effectively 
+ * changing the ball's direction to the opposite direction
+ * along the x-axis
+ */
+void invertHorizontalDirection(Velocity *velocity)
+{
+    velocity->horizontalVelocity = -velocity->horizontalVelocity;
+}
+
+/**
+ * Changes the sign of the vertical velocity, effectively 
+ * changing the ball's direction to the opposite direction
+ * along the y-axis
+ */
+void invertVerticalDirection(Velocity *velocity)
+{
+    velocity->verticalVelocity = -velocity->verticalVelocity;
 }
 
 /**
