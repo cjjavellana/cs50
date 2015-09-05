@@ -58,6 +58,8 @@ typedef struct
 
 // prototypes
 void ballHitsPaddle(Paddle *paddle, Velocity *velocity, GOval *ball);
+void resetBall(GOval *ball);
+void resetGameplay(Velocity *v, GOval *ball, Paddle *paddle, int *lives);
 void checkForEvent(Paddle *bat);
 void ballHitsBrick(Velocity *velocity, GWindow *window, GObject *brick, 
         GLabel *label, int *score, int *bricksCount);
@@ -72,7 +74,7 @@ void invertVerticalDirection(Velocity *velocity);
 int hasBallHitTheSides(GOval *ball, GWindow *window);
 int hasBallHitTheTop(GOval *ball, GWindow *window);
 int hasBallHitTheBottom(const GOval *ball, const GWindow *window);
-void alignPaddleCenter(Paddle *paddle);
+void resetPaddle(Paddle *paddle);
 void showGameOverMessage(GWindow window, GLabel label);
 
 int main(void)
@@ -149,14 +151,7 @@ int main(void)
             }
             else if (hasBallHitTheBottom(&ball, &window))
             {
-                //waitForClick();
-                lives--;
-                velocity->horizontalVelocity = 0.0;
-                removeGWindow(window, ball);
-                freeGObject(ball);
-
-                ball = initBall(window);
-                alignPaddleCenter(bat);
+                resetGameplay(velocity, &ball, bat, &lives);
             }
         }
 
@@ -174,6 +169,18 @@ int main(void)
     return 0;
 }
 
+void resetGameplay(Velocity *v, GOval *ball, Paddle *paddle, int *lives)
+{
+    (*lives)--;
+    v->horizontalVelocity = 0.0;
+    resetBall(ball);
+    resetPaddle(paddle);
+}
+
+void resetBall(GOval *ball)
+{
+    setLocation(*ball, WIDTH / 2 - RADIUS, HEIGHT / 2 - RADIUS);
+}
 /**
  * Detects the paddle based on the location of the mouse pointer
  */
@@ -223,7 +230,7 @@ void ballHitsPaddle(Paddle *paddle, Velocity *velocity, GOval *ball)
     move(ball, velocity->horizontalVelocity, velocity->verticalVelocity - 5);
 }
 
-void alignPaddleCenter(Paddle *paddle)
+void resetPaddle(Paddle *paddle)
 {
     if (paddle == NULL || paddle->paddle == NULL)
     {
