@@ -71,6 +71,8 @@ void invertHorizontalDirection(Velocity *velocity);
 void invertVerticalDirection(Velocity *velocity);
 int hasBallHitTheSides(GOval *ball, GWindow *window);
 int hasBallHitTheTop(GOval *ball, GWindow *window);
+int hasBallHitTheBottom(const GOval *ball, const GWindow *window);
+void alignPaddleCenter(Paddle *paddle);
 void showGameOverMessage(GWindow window, GLabel label);
 
 int main(void)
@@ -126,7 +128,7 @@ int main(void)
         GObject object = detectCollision(window, ball);
         if (object != NULL)
         {
-            if (object == paddle)
+            if (object == bat->paddle)
             {
                 ballHitsPaddle(bat, velocity, ball);
             }
@@ -145,19 +147,16 @@ int main(void)
             {
                 invertVerticalDirection(velocity);
             }
-            else if (getY(ball) + getHeight(ball) >= getHeight(window))
+            else if (hasBallHitTheBottom(&ball, &window))
             {
                 //waitForClick();
                 lives--;
                 velocity->horizontalVelocity = 0.0;
                 removeGWindow(window, ball);
-                removeGWindow(window, paddle);
                 freeGObject(ball);
-                freeGObject(paddle);
 
                 ball = initBall(window);
-                paddle = initPaddle(window);
-                bat->paddle = paddle;
+                alignPaddleCenter(bat);
             }
         }
 
@@ -224,6 +223,20 @@ void ballHitsPaddle(Paddle *paddle, Velocity *velocity, GOval *ball)
     move(ball, velocity->horizontalVelocity, velocity->verticalVelocity - 5);
 }
 
+void alignPaddleCenter(Paddle *paddle)
+{
+    if (paddle == NULL || paddle->paddle == NULL)
+    {
+        printf("Invalid paddle reference\n");
+        exit(1);
+    }
+
+    setLocation(paddle->paddle, 
+            (WIDTH - getWidth(paddle->paddle)) / 2,
+            HEIGHT - PADDLE_HEIGHT - 100);
+            
+}
+
 /**
  * Changes the balls direction when it hits a brick.
  */
@@ -264,6 +277,19 @@ int hasBallHitTheSides(GOval *ball, GWindow *window)
 int hasBallHitTheTop(GOval *ball, GWindow *window)
 {
     if (getY(*ball) <= 0)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * Returns true if the ball has hit the bottom of the window
+ */
+int hasBallHitTheBottom(const GOval *ball, const GWindow *window)
+{
+    if (getY(*ball) + getHeight(*ball) >= getHeight(*window))
     {
         return 1;
     }
