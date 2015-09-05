@@ -71,6 +71,7 @@ void invertHorizontalDirection(Velocity *velocity);
 void invertVerticalDirection(Velocity *velocity);
 int hasBallHitTheSides(GOval *ball, GWindow *window);
 int hasBallHitTheTop(GOval *ball, GWindow *window);
+void showGameOverMessage(GWindow window, GLabel label);
 
 int main(void)
 {
@@ -114,6 +115,9 @@ int main(void)
     bat->x = getX(paddle);
     bat->y = getY(paddle);
 
+    // show the scoreboard
+    updateScoreboard(window, label, points);
+
     // keep playing until game over
     while (lives > 0 && bricks > 0)
     {
@@ -143,7 +147,7 @@ int main(void)
             }
             else if (getY(ball) + getHeight(ball) >= getHeight(window))
             {
-                waitForClick();
+                //waitForClick();
                 lives--;
                 velocity->horizontalVelocity = 0.0;
                 removeGWindow(window, ball);
@@ -160,6 +164,8 @@ int main(void)
         move(ball, velocity->horizontalVelocity, velocity->verticalVelocity);
         pause(10);
     }
+
+    showGameOverMessage(window, label);
 
     // wait for click before exiting
     waitForClick();
@@ -235,9 +241,7 @@ void ballHitsBrick(Velocity *velocity,
     (*score)++;
     (*bricksCount)--;
 
-    char *newScore = malloc(sizeof(char) * 2);
-    sprintf(newScore, "%d", *score);
-    setLabel(*label, newScore);
+    updateScoreboard(*window, *label, *score);
 }
 
 /**
@@ -348,12 +352,20 @@ GLabel initScoreboard(GWindow window)
 {
     GLabel scoreboard = newGLabel("0");
     setFont(scoreboard, "SansSerif-48");
-    double x = (getWidth(window) - getWidth(scoreboard)) / 2;
-    double y = (getHeight(window) + getFontAscent(scoreboard)) / 2;
     setColor(scoreboard, "0xC0C0C0");
-    setLocation(scoreboard, x, y);
     add(window, scoreboard);
     return scoreboard;
+}
+
+void showGameOverMessage(GWindow window, GLabel label)
+{
+    setLabel(label, "Game over. Click to exit");
+    setFont(label, "SansSerif-24");
+    
+    // center label in window
+    double x = (getWidth(window) - getWidth(label)) / 2;
+    double y = (getHeight(window) - getHeight(label)) / 2;
+    setLocation(label, x, y);
 }
 
 /**
