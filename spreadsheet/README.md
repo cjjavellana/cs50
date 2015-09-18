@@ -1,5 +1,5 @@
 # Programming Challenge
-========================
+
 A spreadsheet consists of a two8dimensional array of cells, labeled A1, A2, etc. Rows are  identified using letters, columns by numbers. Each cell contains either an integer (its value) or  an expression. Expressions contain integers, cell references, and the operators '+', '8', '\*', '/'  with the usual rules of evaluation – note that the input is RPN and should be evaluated in stack  order.
 
 The spreadsheet input is defined as follows:
