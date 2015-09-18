@@ -8,6 +8,24 @@ The spreadsheet input is defined as follows:
 
 2. n\*m lines each containing an expression which is the value of the corresponding cell (cells enumerated in the order A1, A2, A<n>, B1, ...) 
 
+## The Input
+3 2 
+A2 
+4 5 * 
+A1
+A1 B2 / 2 +
+3
+39 B1 B2 * /
+
+## The Output
+3 2 
+20.00000 
+20.00000 
+20.00000 
+8.66667 
+3.00000 
+1.50000
+
 # Dependencies
 
 This program depends on the following:
