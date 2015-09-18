@@ -28,7 +28,7 @@ A1 B2 / 2 +
 
 # Dependencies
 
-This program depends on the following:
+This program depends on the following:  
 1. pcre2-10.20 - Pattern matching, regular expression  
 2. cmocka-1.0.0 - For Unit Tests  
   
