@@ -8,6 +8,7 @@
 #include "../matrix.h"
 #include "../regex.h"
 #include "../commons.h"
+#include "../stackcalc.h"
 
 static void testConvertToCellReference(void **state)
 {
@@ -72,6 +73,30 @@ static void testCyclicDependency(void **state)
     assert_int_equal(1, isCyclicRefError(w, 0, 1));
 }
 
+static void testStack(void **state)
+{
+    Stack *stack = malloc(sizeof(Stack));
+    stack->len = 0;
+    
+    Node *node = malloc(sizeof(Node));
+    node->value = 10.0;
+    push(stack, node);
+   
+    Node *node2 = malloc(sizeof(Node));
+    node2->value = 12.0;
+    push(stack, node2);
+
+    Node *poppedNode1 = pop(stack);
+    assert_true(12.0 == poppedNode1->value);
+   
+    Node *poppedNode2 = pop(stack);
+    assert_true(10.0 == poppedNode2->value);
+
+    free(node);
+    free(node2);
+    free(stack);
+}
+
 int main(int argc, char *argv[])
 {
     const struct CMUnitTest tests[] = {
@@ -79,6 +104,7 @@ int main(int argc, char *argv[])
         cmocka_unit_test(testConvertToMatrixLocation),
         cmocka_unit_test(testSetAndGetWorkSheetValue),
         cmocka_unit_test(testCyclicDependency),
+        cmocka_unit_test(testStack),
     };
     
     return cmocka_run_group_tests(tests, NULL, NULL);

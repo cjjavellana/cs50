@@ -4,9 +4,24 @@
 #include <pcre2.h>
 
 #include "matrix.h"
+#include "stackcalc.h"
 
-double matrix_evaluate(Worksheet *w, int row, int col)
+void push(Stack *stack, Node *node)
 {
-    return 0.0;
+    // create new nodelist head
+    node->next = stack->nodeList;
+    stack->nodeList = node;
+    stack->len++;
 }
 
+Node *pop(Stack *stack)
+{
+    Node *nodeList = stack->nodeList;
+    Node *newHead = nodeList->next;
+
+    // remove reference to the next
+    nodeList->next = NULL;
+    stack->nodeList = newHead;
+     
+    return nodeList;
+}
