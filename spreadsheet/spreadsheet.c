@@ -20,13 +20,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-
     Worksheet *w = malloc(sizeof(Worksheet));
-    //initWorksheet(w, 4, 4);
-    //setValue(w, 0, 0, "A2");
-    //printf("%s\n", getValue(w, 0, 0));
-
     matrix_readinput(w, argv[1]);
+
+
 }
 
 static void matrix_readinput(Worksheet *w, char *file)
