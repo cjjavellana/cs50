@@ -141,28 +141,28 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
                 free(re);
                 return 1;
             }
-        }
-
-        //length of existing visitedCells + space character + length of cellRef to be appended + null terminator
-        char *newVisitedCells = malloc(sizeof(char) * (strlen(visitedCells) + 1 + strlen(cellRef->cellReference)) + 1);
-        strcpy(newVisitedCells, visitedCells);
-        strcat(newVisitedCells, " ");
-        strcat(newVisitedCells, cellRef->cellReference);
         
-        CellReference *tokenCellRef = malloc(sizeof(CellReference));
-        tokenCellRef->cellReference = token;
 
-        if(isCyclicError(worksheet, (const char *) newVisitedCells, tokenCellRef))
-        {        
-            free(newVisitedCells);
-            free(cellRef);
-            free(re);
-            return 1;
-        }
+            //length of existing visitedCells + space character + length of cellRef to be appended + null terminator
+            char *newVisitedCells = malloc(sizeof(char) * (strlen(visitedCells) + 1 + strlen(cellRef->cellReference)) + 1);
+            strcpy(newVisitedCells, visitedCells);
+            strcat(newVisitedCells, " ");
+            strcat(newVisitedCells, cellRef->cellReference);
+        
+            CellReference *tokenCellRef = malloc(sizeof(CellReference));
+            tokenCellRef->cellReference = token;
+
+            if(isCyclicError(worksheet, (const char *) newVisitedCells, tokenCellRef))
+            {        
+                free(newVisitedCells);
+                free(cellRef);
+                free(re);
+                return 1;
+            }   
        
-        free(newVisitedCells);
-        free(tokenCellRef);
-        free(cellRef);
+            free(newVisitedCells);
+            free(tokenCellRef);
+        }
         token = strtok(NULL, " ");
     }
 
