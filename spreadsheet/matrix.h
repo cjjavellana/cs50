@@ -18,7 +18,7 @@ typedef struct
 } CellReference;
 
 // The maximum content of a cell (4k)
-#define CELL_CONTENT_LIMIT 4096
+#define CELL_CONTENT_LIMIT 2048 
 
 #define ROW_TO_ASCII_OFFSET 65
 

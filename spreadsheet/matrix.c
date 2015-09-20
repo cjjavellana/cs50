@@ -122,8 +122,18 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
     char *cellValue = getValue(worksheet, m->row, m->col);
     free(m);
 
+    if (cellValue == NULL)
+    {
+        return 0;
+    }
+
     // do work on working copy
-    char *token = malloc(sizeof(char) * strlen(cellValue) + 1);
+    char *token = malloc(sizeof(char) * (strlen(cellValue) + 1));
+    if (token == NULL)
+    {
+        printf("Unable to allocate memory for token\n");
+        exit(1);
+    }
     strcpy(token, cellValue);
     token = strtok(token, " ");
 
@@ -133,7 +143,7 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
         match_data = pcre2_match_data_create(20, NULL);
         int subjectLength = strlen(token);
         rc = pcre2_match(re, (PCRE2_SPTR) token, subjectLength, 0, 0, match_data, NULL); 
-        
+
         if (rc > 0)
         {
             // search if current cellref is in the visited cells
@@ -145,7 +155,8 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
                 free(re);
                 return 1;
             }
-        
+            
+            free(searchVal);
 
             //length of existing visitedCells + space character + length of cellRef to be appended + null terminator
             char *newVisitedCells = malloc(sizeof(char) * (strlen(visitedCells) + 1 + strlen(cellRef->cellReference)) + 1);
@@ -172,6 +183,7 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
 
     free(token);
     free(re);
+    free(match_data);
     return 0;
 }
 

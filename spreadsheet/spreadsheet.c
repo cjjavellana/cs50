@@ -17,6 +17,7 @@ static void matrix_evaluate_worksheet(Worksheet *w);
 static double matrix_evaluate_expression(const Worksheet *w, char *expression, int row, int col);
 static int matrix_is_operator(char *val);
 
+
 int main(int argc, char *argv[])
 {
     if (argc != 2)
@@ -41,7 +42,7 @@ static void matrix_readinput(Worksheet *w, char *file)
 
     int colCounter = -1, rowCounter = 0;
     char *line;
-    size_t read, len;
+    size_t read, len = 0;
     while((read = getline(&line, &len, fp)) != -1)
     {
         if(colCounter == -1)
@@ -57,7 +58,6 @@ static void matrix_readinput(Worksheet *w, char *file)
         } 
         else 
         {
-            printf("[Setting Value] Row: %d, Col: %d, Content: %s\n", rowCounter, colCounter, line);
             setValue(w, rowCounter, colCounter, line);
             if (isCyclicRefError(w, rowCounter, colCounter))
             {
@@ -75,6 +75,7 @@ static void matrix_readinput(Worksheet *w, char *file)
         }
     }
 
+    free(line);
     fclose(fp);
 }
 
@@ -106,37 +107,40 @@ static void matrix_evaluate_worksheet(Worksheet *w)
 
 static double matrix_evaluate_expression(const Worksheet *w, char *expression, int row, int col)
 {
-    Stack *stack = malloc(sizeof(Stack));
-    pcre2_match_data *match_data = NULL;
-    int rc = 0;
     pcre2_code *re = getCellReferencePattern();
-
+    Stack *stack = malloc(sizeof(Stack));
+    pcre2_match_data *match_data = NULL; 
+    int rc = 0;
+    
+    char *saveptr;
     char *token = malloc(sizeof(char) * strlen(expression) + 1);
     strcpy(token, expression);
     token[strlen(token) - 1] = '\0';
-    token = strtok(token , " ");
+    token = strtok_r(token , " ", &saveptr);
 
     while(token != NULL)
     {
-        match_data = pcre2_match_data_create(20, NULL);
         int len = strlen(token);
+        match_data = pcre2_match_data_create(20, NULL);
         rc = pcre2_match(re, (PCRE2_SPTR) token, len, 0, 0, match_data, NULL); 
+        
         if (rc > 0)
         {
-            CellReference cellRef = { token };
-            MatrixLocation *loc = convertToMatrixLocation(&cellRef);
+            CellReference *cellRef = malloc(sizeof(CellReference));
+            cellRef->cellReference = malloc((sizeof(char) * strlen(token)) + 1); 
+            strcpy(cellRef->cellReference, token);
+
+            MatrixLocation *loc = convertToMatrixLocation(cellRef);
 
             char *cellExpression = getValue(w, loc->row, loc->col);
-            char *duplicateExpr = malloc(sizeof(char) * strlen(cellExpression));
-            strcpy(duplicateExpr, cellExpression);
-
-            double result = matrix_evaluate_expression(w, duplicateExpr, loc->row, loc->col);
+            double result = matrix_evaluate_expression(w, cellExpression, loc->row, loc->col);
 
             Node *node = malloc(sizeof(Node));
             node->value = result;
             push(stack, node);
 
-            free(duplicateExpr);
+            free(cellRef);
+            free(loc);
         }
         else
         {
@@ -167,7 +171,8 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
             }
         }
 
-        token = strtok(NULL, " ");
+        token = strtok_r(NULL, " ", &saveptr);
+        free(match_data);
     }
 
     Node *node = pop(stack);
@@ -176,7 +181,7 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
     free(stack);
     free(node);
     free(token);
-
+    free(re);
     return retVal;
 }
 
