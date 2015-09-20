@@ -102,6 +102,7 @@ MatrixLocation *convertToMatrixLocation(const CellReference *ref)
 int isCyclicRefError(const Worksheet *worksheet, int row, int col)
 {
     MatrixLocation m = { row, col };
+
     CellReference *cellRef = convertToCellReference(&m);
     return isCyclicError(worksheet, "", cellRef);
 }
@@ -121,7 +122,11 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
     char *cellValue = getValue(worksheet, m->row, m->col);
     free(m);
 
-    char *token = strtok(cellValue, " ");
+    // do work on working copy
+    char *token = malloc(sizeof(char) * strlen(cellValue) + 1);
+    strcpy(token, cellValue);
+    token = strtok(token, " ");
+
     pcre2_code *re = getCellReferencePattern();
     while(token != NULL)
     {
@@ -131,7 +136,6 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
         
         if (rc > 0)
         {
-            printf("Token Found: %s\n", token);
             // search if current cellref is in the visited cells
             pcre2_code *searchVal = compilePattern(token);
             int isCyclicDependency = pcre2_match(searchVal, (PCRE2_SPTR) visitedCells, strlen(visitedCells), 0, 0, match_data, NULL);
