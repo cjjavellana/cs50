@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     Worksheet *w = malloc(sizeof(Worksheet));
     matrix_readinput(w, argv[1]);
     matrix_evaluate_worksheet(w);
+    free(w);
 }
 
 static void matrix_readinput(Worksheet *w, char *file)
