@@ -30,6 +30,11 @@ typedef struct
 int initWorksheet(Worksheet *worksheet, int rows, int columns);
 
 /**
+ * Closes and releases the resources of the worksheet
+ */
+int closeWorksheet(Worksheet *w);
+
+/**
  * Returns 1 if a cyclic dependency is detected. 0 if otherwise.
  */
 int isCyclicRefError(const Worksheet *worksheet, int row, int col);
@@ -43,6 +48,17 @@ int setValue(Worksheet *worksheet, int row, int column, char *cellContent);
  * Returns the value at row, col
  */
 char* getValue(const Worksheet *worksheet, int row, int column);
+
+/**
+ * Returns the value at row, col and writes it into the buffer.
+ *
+ * Usage:
+ *
+ * char *buffer;
+ * getValue2(w, &buffer, row, column);
+ *
+ */
+int getValue2(const Worksheet *w, char **buffer, int row, int column);
 
 /**
  * Returns a pointer to a CellReference structure

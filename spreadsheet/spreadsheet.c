@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
     Worksheet *w = malloc(sizeof(Worksheet));
     matrix_readinput(w, argv[1]);
     matrix_evaluate_worksheet(w);
-    free(w);
+    closeWorksheet(w);
+
 }
 
 static void matrix_readinput(Worksheet *w, char *file)
@@ -42,8 +43,8 @@ static void matrix_readinput(Worksheet *w, char *file)
     }
 
     int colCounter = -1, rowCounter = 0;
-    char *line;
-    size_t read, len = 0;
+    char *line = NULL;
+    size_t read = 0, len = 0;
     while((read = getline(&line, &len, fp)) != -1)
     {
         if(colCounter == -1)
@@ -99,25 +100,29 @@ static void matrix_evaluate_worksheet(Worksheet *w)
     {
         for(int j = 0; j< w->cols; j++)
         {
-            char *expression = getValue(w, i, j);
+            char *expression = NULL;
+            getValue2(w, &expression, i, j);
             double d = matrix_evaluate_expression(w, expression, i, j);
             printf("Row: %d; Col: %d; Value: %.5f\n", i, j, d);
+            free(expression);
         }
     }
 }
 
 static double matrix_evaluate_expression(const Worksheet *w, char *expression, int row, int col)
 {
+    if (expression == NULL) return 0;
+    
     pcre2_code *re = getCellReferencePattern();
     Stack *stack = malloc(sizeof(Stack));
     pcre2_match_data *match_data = NULL; 
     int rc = 0;
     
-    char *saveptr;
-    char *token = malloc(sizeof(char) * strlen(expression) + 1);
-    strcpy(token, expression);
-    token[strlen(token) - 1] = '\0';
-    token = strtok_r(token , " ", &saveptr);
+    char *saveptr = NULL;
+    char *token = NULL;
+
+    expression[strlen(expression) - 1] = '\0';
+    token = strtok_r(expression, " ", &saveptr);
 
     while(token != NULL)
     {
@@ -132,14 +137,17 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
             strcpy(cellRef->cellReference, token);
 
             MatrixLocation *loc = convertToMatrixLocation(cellRef);
+            char *cellExpression = NULL;
+            getValue2(w, &cellExpression, loc->row, loc->col);
 
-            char *cellExpression = getValue(w, loc->row, loc->col);
             double result = matrix_evaluate_expression(w, cellExpression, loc->row, loc->col);
 
             Node *node = malloc(sizeof(Node));
             node->value = result;
             push(stack, node);
 
+            free(cellExpression);
+            free(cellRef->cellReference);
             free(cellRef);
             free(loc);
         }
@@ -159,6 +167,9 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
                 if (strcmp(token, "-") == 0) result = val2 - val1;
                 if (strcmp(token, "*") == 0) result = val1 * val2;
                 if (strcmp(token, "/") == 0)  result = val2 / val1;
+
+                free(op1);
+                free(op2);
 
                 Node *newValue = malloc(sizeof(Node));
                 newValue->value = result;
@@ -181,7 +192,6 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
 
     free(stack);
     free(node);
-    free(token);
     free(re);
     return retVal;
 }

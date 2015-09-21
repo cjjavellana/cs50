@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 700
 #define PCRE2_CODE_UNIT_WIDTH 8
 
 #include <stdio.h>
@@ -27,11 +28,26 @@ int initWorksheet(Worksheet *worksheet, int rows, int columns) {
         matrix[i] = (char **) malloc(sizeof(char *) * columns);
 
         for(int j = 0; j < columns; j++) {
-            matrix[i][j] = (char *) malloc(sizeof(char) * CELL_CONTENT_LIMIT);
+            matrix[i][j] = (char *) calloc(sizeof(char) * CELL_CONTENT_LIMIT, sizeof(char));
         }
     }
 
     worksheet->cells = matrix;
+    return 1;
+}
+
+int closeWorksheet(Worksheet *w)
+{
+    for(int i = 0; i < w->rows; i++)
+    {
+        for(int j = 0; j < w->cols; j++)
+        {
+            free(w->cells[i][j]);
+        }
+        free(w->cells[i]);
+    }
+    free(w->cells);
+    free(w);
     return 1;
 }
 
@@ -56,6 +72,16 @@ char* getValue(const Worksheet *worksheet, int row, int column) {
     return worksheet->cells[row][column];
 }
 
+int getValue2(const Worksheet *w, char **buffer, int row, int column)
+{
+    if (w == NULL) return 0;
+    if (w->cells[row][column] == NULL) return 0;
+
+    *buffer = malloc(sizeof(char) * strlen(w->cells[row][column]) + 1);
+    strcpy(*buffer, w->cells[row][column]);
+
+    return 1;
+}
 
 /**
  * Converts the given location (row, column) to a spreadsheet cell reference i.e. A1
@@ -64,16 +90,12 @@ CellReference *convertToCellReference(const MatrixLocation *location)
 {
     CellReference *ref = malloc(sizeof(CellReference));
 
-    char rowRef[2];
-    rowRef[0] = (char) (location->row + ROW_TO_ASCII_OFFSET);
-    rowRef[1] = '\0';
-
     char *colRef = malloc(sizeof(char) * getNumberOfDigits(location->col) + 1);
     sprintf(colRef, "%d", location->col + 1);
-    strcat(colRef, "\0");
 
-    ref->cellReference = malloc(1 + strlen(colRef) + 1);
-    sprintf(ref->cellReference, "%s%s", rowRef, colRef);
+    // row ref + col ref + null terminator
+    ref->cellReference = malloc(sizeof(char) * (1 + strlen(colRef) + 1) + 1);
+    sprintf(ref->cellReference, "%c%s", (char)(location->row + ROW_TO_ASCII_OFFSET), colRef);
     free(colRef);
 
     return ref;
@@ -86,10 +108,11 @@ MatrixLocation *convertToMatrixLocation(const CellReference *ref)
 {
     MatrixLocation *loc = malloc(sizeof(MatrixLocation));
     loc->row = ((int) toupper(ref->cellReference[0])) - ROW_TO_ASCII_OFFSET;
-
-    char *col = malloc(sizeof(char) + strlen(ref->cellReference));
+    
+    char *col = calloc(sizeof(char) + strlen(ref->cellReference), sizeof(char));
     col = strncpy(col, ref->cellReference + 1, strlen(ref->cellReference) - 1);
     loc->col = atoi(col) - 1;
+    free(col);
     return loc;
 }
 
@@ -104,7 +127,11 @@ int isCyclicRefError(const Worksheet *worksheet, int row, int col)
     MatrixLocation m = { row, col };
 
     CellReference *cellRef = convertToCellReference(&m);
-    return isCyclicError(worksheet, "", cellRef);
+    int result = isCyclicError(worksheet, "", cellRef); 
+
+    free(cellRef->cellReference);
+    free(cellRef);
+    return result;
 }
 
 /**
@@ -116,10 +143,13 @@ int isCyclicRefError(const Worksheet *worksheet, int row, int col)
 static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, CellReference *cellRef)
 {
     pcre2_match_data *match_data = NULL;
+    char *saveptr = NULL;
     int rc = 0;
 
     MatrixLocation *m = convertToMatrixLocation(cellRef);  
-    char *cellValue = getValue(worksheet, m->row, m->col);
+    
+    char *cellValue = NULL;
+    getValue2(worksheet, &cellValue, m->row, m->col);
     free(m);
 
     if (cellValue == NULL)
@@ -128,15 +158,8 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
     }
 
     // do work on working copy
-    char *token = malloc(sizeof(char) * (strlen(cellValue) + 1));
-    if (token == NULL)
-    {
-        printf("Unable to allocate memory for token\n");
-        exit(1);
-    }
-    strcpy(token, cellValue);
-    token = strtok(token, " ");
-
+    char *token = NULL;
+    token = strtok_r(cellValue, " ", &saveptr);
     pcre2_code *re = getCellReferencePattern();
     while(token != NULL)
     {
@@ -151,6 +174,8 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
             int isCyclicDependency = pcre2_match(searchVal, (PCRE2_SPTR) visitedCells, strlen(visitedCells), 0, 0, match_data, NULL);
             if (isCyclicDependency > 0)
             {
+                free(cellValue);
+                free(match_data);
                 free(searchVal);
                 free(re);
                 return 1;
@@ -169,21 +194,22 @@ static int isCyclicError(const Worksheet *worksheet, const char *visitedCells, C
 
             if(isCyclicError(worksheet, (const char *) newVisitedCells, tokenCellRef))
             {        
+                free(cellValue);
                 free(newVisitedCells);
-                free(cellRef);
+                free(match_data);
                 free(re);
                 return 1;
             }   
-       
+      
             free(newVisitedCells);
             free(tokenCellRef);
         }
-        token = strtok(NULL, " ");
+        token = strtok_r(NULL, " ", &saveptr);
+        free(match_data);
     }
 
-    free(token);
+    free(cellValue);
     free(re);
-    free(match_data);
     return 0;
 }
 
