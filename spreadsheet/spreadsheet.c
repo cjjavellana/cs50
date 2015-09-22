@@ -103,6 +103,11 @@ static void matrix_evaluate_worksheet(Worksheet *w)
             char *expression = NULL;
             getValue2(w, &expression, i, j);
             double d = matrix_evaluate_expression(w, expression, i, j);
+
+            char cellValue[20];
+            sprintf(cellValue, "%lf", d);
+            setValue(w, i, j, cellValue);
+
             printf("Row: %d; Col: %d; Value: %.5f\n", i, j, d);
             free(expression);
         }
@@ -178,7 +183,7 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
             else 
             {
                 Node *newValue = malloc(sizeof(Node));
-                newValue->value = atoi(token);
+                newValue->value = atof(token);
                 push(stack, newValue);
             }
         }

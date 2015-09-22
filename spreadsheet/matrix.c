@@ -59,6 +59,7 @@ int closeWorksheet(Worksheet *w)
 int setValue(Worksheet *worksheet, int row, int column, char* s) {
     if (strlen(s) <= CELL_CONTENT_LIMIT) {
         strncpy(worksheet->cells[row][column], s, strlen(s));
+        worksheet->cells[row][column][strlen(s)] = '\0';
         return 1;
     } else {
         return 0;
