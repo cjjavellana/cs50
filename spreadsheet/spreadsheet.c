@@ -16,7 +16,7 @@ static void matrix_readinput(Worksheet *w, char *file);
 static void matrix_evaluate_worksheet(Worksheet *w);
 static double matrix_evaluate_expression(const Worksheet *w, char *expression, int row, int col);
 static int matrix_is_operator(char *val);
-
+static double matrix_handle_cellref(const Worksheet *w, char *cellRefToken);
 
 int main(int argc, char *argv[])
 {
@@ -137,24 +137,11 @@ static double matrix_evaluate_expression(const Worksheet *w, char *expression, i
         
         if (rc > 0)
         {
-            CellReference *cellRef = malloc(sizeof(CellReference));
-            cellRef->cellReference = malloc((sizeof(char) * strlen(token)) + 1); 
-            strcpy(cellRef->cellReference, token);
-
-            MatrixLocation *loc = convertToMatrixLocation(cellRef);
-            char *cellExpression = NULL;
-            getValue2(w, &cellExpression, loc->row, loc->col);
-
-            double result = matrix_evaluate_expression(w, cellExpression, loc->row, loc->col);
+            double result = matrix_handle_cellref(w, token);
 
             Node *node = malloc(sizeof(Node));
             node->value = result;
             push(stack, node);
-
-            free(cellExpression);
-            free(cellRef->cellReference);
-            free(cellRef);
-            free(loc);
         }
         else
         {
@@ -214,3 +201,22 @@ static int matrix_is_operator(char *val)
     return 0;
 }
 
+static double matrix_handle_cellref(const Worksheet *w, char *cellRefToken)
+{
+    CellReference *cellRef = malloc(sizeof(CellReference));
+    cellRef->cellReference = malloc((sizeof(char) * strlen(cellRefToken)) + 1); 
+    strcpy(cellRef->cellReference, cellRefToken);
+
+    MatrixLocation *loc = convertToMatrixLocation(cellRef);
+    char *cellExpression = NULL;
+    getValue2(w, &cellExpression, loc->row, loc->col);
+
+    double result = matrix_evaluate_expression(w, cellExpression, loc->row, loc->col);
+
+    free(cellExpression);
+    free(cellRef->cellReference);
+    free(cellRef);
+    free(loc);
+
+    return result;
+}
