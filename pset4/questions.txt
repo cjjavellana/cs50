@@ -53,6 +53,7 @@
     Because we want to read only 1 element which is equal to the sizeof(BITMAPFILEHEADER) and sizeof(BITMAPINFOHEADER)
 
 15. What value does copy.c:70 assign padding if bi.biWidth is 3?
+    3
 
 16. What does fseek do?
     fseek advances the file position of the stream by a given offset from the position defined by the third parameter.
