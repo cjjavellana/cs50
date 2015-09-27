@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     // ensure proper usage
     if (argc != 4)
     {
-        printf("Usage: ./resize factor infile outfile\n");
+        printf("Usage: ./resize n infile outfile\n");
         return 1;
     }
 
@@ -30,6 +30,14 @@ int main(int argc, char* argv[])
     // remember filenames
     char* infile = argv[2];
     char* outfile = argv[3];
+
+    // ensure that scale is between 1 and 100
+    if (scale < 1 ||
+            scale > 100)
+    {
+        printf("n must be between 1 and 100 only\n");
+        return 1;
+    }
 
     // open input file 
     FILE* inptr = fopen(infile, "r");
@@ -65,7 +73,6 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Unsupported file format.\n");
         return 4;
     }
-
 
     // create the BITMAPFILEHEADER and BITMAPINFOHEADER structure 
     // for the outfile
