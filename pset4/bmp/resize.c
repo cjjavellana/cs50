@@ -84,9 +84,9 @@ int main(int argc, char* argv[])
     // determine padding required for the out-file
     int oPadding = (4 - (oBi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
-    oBi.biSizeImage = oBi.biWidth * abs(oBi.biHeight) * sizeof(RGBTRIPLE) + (oPadding * oBi.biHeight);
+    oBi.biSizeImage = oBi.biWidth * abs(oBi.biHeight) * sizeof(RGBTRIPLE) + (oPadding * abs(oBi.biHeight));
 
-    oBf.bfSize = oBi.biSizeImage + 54;
+    oBf.bfSize = oBi.biSizeImage + sizeof(BITMAPINFOHEADER) + sizeof(BITMAPFILEHEADER);
 
     // write outfile's BITMAPFILEHEADER
     fwrite(&oBf, sizeof(BITMAPFILEHEADER), 1, outptr);
