@@ -26,7 +26,9 @@ int main(int argc, char *argv[]){
     push(&stack, (void *) 2);
     push(&stack, (void *) 3);
     push(&stack, (void *) 4);
+    push(&stack, (void *) "Hello World");
 
+    printf("Popped Value: %s\n", (char *) pop(&stack));
     printf("Popped Value: %d\n", (int) pop(&stack));
     printf("Popped Value: %d\n", (int) pop(&stack));
     printf("Popped Value: %d\n", (int) pop(&stack));
