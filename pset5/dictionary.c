@@ -5,6 +5,9 @@
  * Problem Set 5
  *
  * Implements a dictionary's functionality.
+ *
+ * Stores the words in an AVL tree to improve search efficiency.
+ * AVL tree implementation inspired by http://www.geeksforgeeks.org/avl-tree-set-1-insertion/
  ***************************************************************************/
 #define _XOPEN_SOURCE 700
 
@@ -22,7 +25,38 @@ node *wordlist;
 static int height(node *n);
 static int getBalance(node *n);
 static int max(int a, int b);
+static void rotateLeft(node **n);
+static void rotateRight(node **n);
 
+static void rotateLeft(node **n)
+{
+    node *n1 = (*n)->right;
+    node *n2 = n1->left;
+
+    n1->left = *n;
+    (*n)->right = n2;
+
+    (*n)->height = max(height((*n)->left), height((*n)->right)) + 1;
+    n1->height = max(height(n1->left), height(n1->right)) + 1;
+    
+    // assign new root
+    *n = n1;
+}
+
+static void rotateRight(node **n)
+{
+    node *n1 = (*n)->left;
+    node *n2 = n1->right;
+
+    n1->right = *n;
+    (*n)->left = n2;
+
+    (*n)->height = max(height((*n)->left), height((*n)->right)) + 1;
+    n1->height = max(height(n1->left), height(n1->right)) + 1;
+
+    // assign new root
+    *n = n1;
+}
 
 /**
  * Adds a word into the word list binary tree
@@ -60,12 +94,14 @@ int insert(char* word, node **tree)
     
     if (balance > 1 && strcmp(word, (*tree)->left->word) < 0)
     {
-        
+        rotateRight(tree);
+        return 1; 
     }
 
     if (balance < -1 && strcmp(word, (*tree)->right->word) >  0)
     {
-        
+       rotateLeft(tree);
+       return 1;
     }
 
     return 1;
