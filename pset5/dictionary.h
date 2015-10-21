@@ -16,13 +16,6 @@
 // (e.g., pneumonoultramicroscopicsilicovolcanoconiosis)
 #define LENGTH 45
 
-typedef struct node {
-    char *word;
-    int height;
-    struct node *left;
-    struct node *right;
-} node;
-
 /**
  * Returns true if word is in dictionary else false.
  */
