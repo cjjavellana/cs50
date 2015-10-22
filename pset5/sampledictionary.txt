@@ -1,4 +1,9 @@
-christian
-javellana
-test
-word
+apple
+banana
+carrots
+dog
+fire
+guava
+helicopter
+jetski
+kernel

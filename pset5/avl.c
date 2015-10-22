@@ -50,6 +50,16 @@ int avl_insert(char* word, node **tree)
     } else if (balance < -1 && strcmp(word, (*tree)->right->word) >  0)
     {
         rotateLeft(tree);
+    } 
+    else if (balance > 1 && strcmp(word, (*tree)->left->word) > 0)
+    {
+        rotateLeft(&(*tree)->left);
+        rotateRight(tree);
+    } 
+    else if (balance < -1 && strcmp(word, (*tree)->right->word) < 0)
+    {
+        rotateRight(&(*tree)->right);
+        rotateLeft(tree);
     }
 
     return 1;
