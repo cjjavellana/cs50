@@ -20,14 +20,14 @@
 #include "avl.h"
 
 node *wordlist;
+int wordcount = 0;
 
 /**
  * Returns true if word is in dictionary else false.
  */
 bool check(const char* word)
 {
-    // TODO
-    return false;
+    return (avl_search(wordlist, word) == 1) ? true : false;
 }
 
 /**
@@ -47,7 +47,13 @@ bool load(const char* dictionary)
     size_t read = 0, len = 0;
     while((read = getline(&line, &len, fp)) != -1)
     {
+        if (line[strlen(line) - 1] == '\n')
+        {
+            line[strlen(line) -1] = '\0';
+        }
+
         avl_insert(line, &wordlist); 
+        wordcount++;
     }
    
     fclose(fp);
@@ -59,8 +65,7 @@ bool load(const char* dictionary)
  */
 unsigned int size(void)
 {
-    // TODO
-    return 0;
+    return wordcount;
 }
 
 /**

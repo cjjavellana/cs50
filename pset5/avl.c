@@ -11,6 +11,30 @@ static void rotateLeft(node **n);
 static void rotateRight(node **n);
 
 /**
+ * Returns 1 if keyword can is found in the avl tree. Returns 0 if otherwise.
+ */
+int avl_search(node *tree, const char* keyword)
+{
+    if (tree == NULL)
+    {
+        return 0;
+    }
+
+    if (strcmp(tree->word, keyword) == 0) 
+    {
+        return 1;
+    }
+    else if (strcmp(keyword, tree->word) < 0)
+    {
+        return avl_search(tree->left, keyword);
+    }
+    else 
+    {
+        return avl_search(tree->right, keyword);
+    }
+}
+
+/**
  * Adds a word into the word list binary tree
  */
 int avl_insert(char* word, node **tree)
@@ -28,7 +52,7 @@ int avl_insert(char* word, node **tree)
         (*tree)->left = NULL;
         (*tree)->right = NULL;
         (*tree)->height = 1;
-
+    
         return 1;
     }
     

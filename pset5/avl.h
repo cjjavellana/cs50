@@ -20,4 +20,4 @@ void avl_preOrder(node *tree);
 /**
  * Returns 1 if keyword can is found in the avl tree. Returns 0 if otherwise.
  */
-int avl_search(node *tree, char* keyword);
+int avl_search(node *tree, const char* keyword);
