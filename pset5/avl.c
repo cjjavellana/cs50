@@ -95,6 +95,17 @@ int avl_unload(node *tree)
     return 0;
 }
 
+/**
+ * Rotates a sub-tree to the left.
+ *
+ * Example:
+ *
+ *      A               B
+ *       \             / \
+ *        B     -->   A   C
+ *         \
+ *          C
+ */
 static void rotateLeft(node **n)
 {
     node *n1 = (*n)->right;
@@ -110,6 +121,16 @@ static void rotateLeft(node **n)
     *n = n1;
 }
 
+/**
+ * Rotates a sub-tree to the right
+ *
+ * Example:
+ *       C          B
+ *      /          / \
+ *     B    -->   A   C
+ *    /
+ *   A 
+ */
 static void rotateRight(node **n)
 {
     node *n1 = (*n)->left;
