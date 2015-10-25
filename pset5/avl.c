@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 
 #include "avl.h"
@@ -20,11 +21,11 @@ int avl_search(node *tree, const char* keyword)
         return 0;
     }
 
-    if (strcmp(tree->word, keyword) == 0) 
+    if (strcasecmp(tree->word, keyword) == 0) 
     {
         return 1;
     }
-    else if (strcmp(keyword, tree->word) < 0)
+    else if (strcasecmp(keyword, tree->word) < 0)
     {
         return avl_search(tree->left, keyword);
     }
@@ -41,13 +42,14 @@ int avl_insert(char* word, node **tree)
 {
     if (*tree == NULL)
     {
+        printf("Creating node for %s\n", word);
         *tree = malloc(sizeof(node));
         if (*tree == NULL)
         {
             return 0;
         }
         
-        (*tree)->word = malloc(sizeof(char) * strlen(word));
+        (*tree)->word = malloc(sizeof(char) * strlen(word) + 1);
         strcpy((*tree)->word, word);
         (*tree)->left = NULL;
         (*tree)->right = NULL;
@@ -87,6 +89,32 @@ int avl_insert(char* word, node **tree)
     }
 
     return 1;
+}
+
+int avl_unload(node *tree) 
+{
+    // The base case - If a leaf 
+    // release resources
+    if (tree != NULL &&
+            tree->left == NULL &&
+            tree->right == NULL) 
+    {
+        free(tree->word);
+        free(tree);
+        return 1;
+    }
+
+    if (tree->left != NULL)
+    {
+        return avl_unload(tree->left);
+    }
+
+    if (tree->right != NULL)
+    {
+        return avl_unload(tree->right);
+    }
+
+    return 0;
 }
 
 static void rotateLeft(node **n)

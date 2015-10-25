@@ -55,7 +55,8 @@ bool load(const char* dictionary)
         avl_insert(line, &wordlist); 
         wordcount++;
     }
-   
+    free(line);
+
     fclose(fp);
     return true;
 }
@@ -73,6 +74,5 @@ unsigned int size(void)
  */
 bool unload(void)
 {
-    // TODO
-    return false;
+    return (avl_unload(wordlist) == 1) ? true : false;
 }
