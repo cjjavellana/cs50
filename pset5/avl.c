@@ -16,23 +16,14 @@ static void rotateRight(node **n);
  */
 int avl_search(node *tree, const char* keyword)
 {
-    if (tree == NULL)
-    {
-        return 0;
-    }
+    if (tree == NULL) return 0;
 
     if (strcasecmp(tree->word, keyword) == 0) 
-    {
         return 1;
-    }
-    else if (strcasecmp(keyword, tree->word) < 0)
-    {
+    else if (strcasecmp(keyword, tree->word) < 0) 
         return avl_search(tree->left, keyword);
-    }
     else 
-    {
         return avl_search(tree->right, keyword);
-    }
 }
 
 /**
