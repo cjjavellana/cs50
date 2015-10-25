@@ -10,7 +10,6 @@ static int getBalance(node *n);
 static int max(int a, int b);
 static void rotateLeft(node **n);
 static void rotateRight(node **n);
-//static int isLeaf(node *n);
 
 /**
  * Returns 1 if keyword can is found in the avl tree. Returns 0 if otherwise.
@@ -93,8 +92,6 @@ int avl_insert(char* word, node **tree)
 
 int avl_unload(node *tree) 
 {
-    // The base case - If a leaf 
-    // release resources
     if (tree != NULL)
     {
         avl_unload(tree->left);
@@ -107,19 +104,6 @@ int avl_unload(node *tree)
     return 0;
 }
 
-/**
-static int isLeaf(node *n)
-{
-    if (n != NULL &&
-            n->left == NULL &&
-            n->right == NULL)
-    {
-        return 1;
-    }
-
-    return 0;
-}
-**/
 static void rotateLeft(node **n)
 {
     node *n1 = (*n)->right;
