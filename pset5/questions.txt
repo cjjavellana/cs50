@@ -1,11 +1,28 @@
-0.  TODO
-1.  TODO
+0.  Refers to a lung disease caused by inhaling ash or sand particles
+1.  getrusage, returns the resource usage of either the calling process, the children of the calling process or the calling thread.
 2.  16
-3.  TODO
-4.  TODO
-5.  TODO
-6.  TODO
-7.  TODO
-8.  TODO
-9.  TODO
-10. TODO
+3.  We are passing by reference to calculate to avoid the overhead of copying when we are passing by value.
+4.  main() loads the dictionary (defaults to the dictionary at /home/cs50/pset5/dictionaries/large if no dictionary file is passed in the command line argument) file using the load function. 
+    After successfully loading the dictionary file, main() opens the text file and enters a for-loop to: 
+        1. Read the contents of the file character by character.
+        2. The read character is appended into the variable 'word'
+        3. Any digits are ignored.
+        4. If main() encounters the word boundary (a non-alphabet, non-digit character), it must have found a complete word.
+        5. main() then checks if the word in 'word' variable exists in the dictionary.
+        6. If the word does not exist in the dictionary, main() prints it out in the console.
+        7. main then repeats the same process (from steps 1-6) until it reaches EOF.
+    
+5.  By relying on fscanf() we would not be able to ignore numeric characters in the words.
+6.  Parameters to check and load were declared as const to indicate that they are not meant to be modified.
+7.  I used a binary tree data structure. 
+        typedef struct node {
+            char *word;         // the word from the dictionary
+            int height;         // the distance from the root to 'this' node
+            struct node *left;  // pointer to the node on the left subtree
+            struct node *right; // pointer to the node on the right subtree
+        } node;
+
+8.  The first time I got this pset working, was O (log n).
+9.  Having encountered binary search tree and balanced binary search tree before, I started working on a solution to implement an AVL tree. With that, once I got 
+    my code working, i need not tune it any further after seeing the time difference between my solution and the CS50 staff's implementation isn't that big.
+10. No
