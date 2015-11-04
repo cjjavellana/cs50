@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -8,35 +10,26 @@ void find_digits(int n, char* digits);
 
 int main(int argc, char* argv[]) {
 
-    int line_no = 0, testcases = 0, char_counter = 0;
-    char buff[100];
-    memset(buff, 0, 100);
-    char ch;
+    char *line = NULL;
+    size_t size = 0;
 
-    while(read(0, &ch, 1) > 0) {
-        if(ch == '\n') {
-            if(line_no == 0) {
-                testcases = atoi(buff);
-            } else {
-                char *digits = malloc(sizeof(char) * 100 + 1);
-                memset(digits, 0, 101);
+    getline(&line, &size, stdin);
+    int testCaseCount = atoi(line);
+    for(int i = 0; i < testCaseCount; i++) {
+        getline(&line, &size, stdin);
+        
+        char *digits = malloc(sizeof(char) * 100 + 1);
+        memset(digits, 0, 101);
 
-                int n = atoi(buff);
-                find_digits(n, digits);
-                if(n == strlen(digits)) {
-                    printf("%s\n", digits);
-                } else {
-                    printf("-1\n");
-                }
-    
-                free(digits);
-            }
-            line_no++;
-            char_counter = 0;
-            memset(buff, 0, 100);
+        int n = atoi(line);
+        find_digits(n, digits);
+        if(n == strlen(digits)) {
+            printf("%s\n", digits);
         } else {
-            buff[char_counter++] = ch;
-        }       
+            printf("-1\n");
+        }
+    
+        free(digits);
     }
 
     return 0;
