@@ -51,9 +51,9 @@ void find_digits(int n, char* digits) {
         return;
     }
 
-    if (n > 3) {
-        strcat(digits, "555");
-        find_digits(n - 3, digits);
+    if (n > 5) {
+        strcat(digits, "33333");
+        find_digits(n - 5, digits);
     }
 
     return;
