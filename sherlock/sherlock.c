@@ -18,10 +18,10 @@ int main(int argc, char* argv[]) {
     for(int i = 0; i < testCaseCount; i++) {
         getline(&line, &size, stdin);
         
-        char *digits = malloc(sizeof(char) * 100 + 1);
-        memset(digits, 0, 101);
-
         int n = atoi(line);
+        char *digits = malloc(sizeof(char) * n + 1);
+        memset(digits, 0, n + 1);
+
         find_digits(n, digits);
         if(n == strlen(digits)) {
             printf("%s\n", digits);
