@@ -43,16 +43,18 @@ void find_digits(int n, char* digits) {
     memset(fives, 0, n + 1);
     
     while (n >= 3) {
+
         if((n % 3) == 0) {
-            strcat(fives, "555");
-            n -= 3;
-            continue;
+            for(int i = 0; i < n; i+=3) {
+                strcat(fives, "555");
+            }
+            break;
         }
 
         if((n % 5) == 0) {
             strcat(threes, "33333");
             n -= 5;
-            continue;;
+            continue;
         }
     
         if (n > 3) {
