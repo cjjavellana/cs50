@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
         getline(&line, &size, stdin);
         
         int n = atoi(line);
-        char *digits = malloc(sizeof(char) * n + 1);
+        char *digits = malloc(sizeof(char) * (n * 2) + 1);
         memset(digits, 0, n + 1);
 
         find_digits(n, digits);
@@ -37,24 +37,34 @@ int main(int argc, char* argv[]) {
 
 void find_digits(int n, char* digits) {
 
-    if((n % 3) == 0) {
-        for(int i = 0; i < n; i++) {
-           strcat(digits, "5");
+    char *threes = malloc(sizeof(char) * n + 1);
+    char *fives = malloc(sizeof(char) * n + 1);
+    memset(threes, 0, n + 1);
+    memset(fives, 0, n + 1);
+    
+    while (n >= 3) {
+        if((n % 3) == 0) {
+            strcat(fives, "555");
+            n -= 3;
+            continue;
         }
-        return;
-    }
 
-    if((n % 5) == 0) {
-        for(int i = 0; i < n; i++) {
-           strcat(digits, "3");
+        if((n % 5) == 0) {
+            strcat(threes, "33333");
+            n -= 5;
+            continue;;
         }
-        return;
+    
+        if (n > 3) {
+            strcat(fives, "555");
+            n -= 3;
+            continue;
+        }  
     }
 
-    if (n > 5) {
-        strcat(digits, "33333");
-        find_digits(n - 5, digits);
-    }
+    strcat(digits, fives);
+    strcat(digits, threes);
 
-    return;
+    free(threes);
+    free(fives);
 }
