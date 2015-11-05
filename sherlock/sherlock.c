@@ -45,9 +45,11 @@ void find_digits(int n, char* digits) {
     while (n >= 3) {
 
         if((n % 3) == 0) {
-            for(int i = 0; i < n; i+=3) {
-                strcat(fives, "555");
-            }
+            char *tmp = malloc(sizeof(char) * n + 1);
+            memset(tmp, 0x35, n);
+            tmp[n] = '\0';
+            strcat(fives, tmp);
+            free(tmp);
             break;
         }
 
