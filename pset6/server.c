@@ -146,9 +146,51 @@ int main(int argc, char* argv[])
             printf("%s", line);
 
             // TODO: validate request-line
+            needle = strchr(haystack, ' '); 
+            char method[needle - haystack + 1];
+            strncpy(method, haystack, needle - haystack + 1);
+            method[needle - haystack] = '\0';
+
+            if (strcasecmp(method, "GET") != 0)
+            {
+               error(405);
+               continue;
+            }
+
+            // remove leading space
+            char *tmpHaystack = needle + 1;
+            needle = strchr(tmpHaystack, ' ');
+            char reqTarget[needle - tmpHaystack + 1];
+            strncpy(reqTarget, tmpHaystack, needle - tmpHaystack + 1);
+            reqTarget[needle - tmpHaystack] = '\0';
+
+            if (reqTarget[0] != '/')
+            {
+                error(501);
+                continue;
+            }
+
+            char *quotes = strchr(reqTarget, '"');
+            if (quotes != NULL)
+            {
+                error(400);
+                continue;
+            }
+
+            tmpHaystack = needle + 1;
+            needle = strstr(tmpHaystack, "\r\n");
+            char version[needle - tmpHaystack + 1];
+            strncpy(version, tmpHaystack, needle - tmpHaystack + 1);
+            version[needle - tmpHaystack] = '\0';
+            
+            if(strcasecmp(version, "HTTP/1.1") != 0)
+            {
+                error(505);
+                continue;
+            }
 
             // TODO: extract query from request-target
-            char query[] = "TODO";
+            char query[1024];
 
             // TODO: concatenate root and absolute-path
             char path[] = "TODO";
@@ -240,7 +282,7 @@ int main(int argc, char* argv[])
 
                 // TODO: respond to client
             }
-            
+           
             // announce OK
             printf("\033[32m");
             printf("HTTP/1.1 200 OK");
