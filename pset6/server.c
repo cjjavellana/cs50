@@ -190,17 +190,60 @@ int main(int argc, char* argv[])
             }
 
             // TODO: extract query from request-target
-            char query[1024];
+            needle = strchr(reqTarget, '?');
+            int querySize = (needle == NULL) ? 1 : strlen(needle);
+
+            // if req target does not have '?', entire request target 
+            // is the path
+            int pathSize = (needle == NULL) ? strlen(reqTarget) : (needle - reqTarget) + 1;
+            char query[querySize];
+            char contextPath[pathSize];
+
+            if(needle != NULL)
+            {
+                strncpy(query, needle + 1, strlen(needle));
+                strncpy(contextPath, reqTarget, needle - reqTarget);
+                query[strlen(needle)] = '\0';
+                contextPath[needle - reqTarget] = '\0';
+            }
+            else
+            {
+                query[0] = '\0';
+                strcpy(contextPath, reqTarget);
+            }
 
             // TODO: concatenate root and absolute-path
-            char path[] = "TODO";
+            char path[strlen(root) + strlen(contextPath) + 1];
+            strcpy(path, root);
+            strcat(path, contextPath);
 
             // TODO: ensure path exists
+            if(access(path, F_OK) == -1)
+            {
+                error(404);
+                continue;
+            }
             
             // TODO: ensure path is readable
+            if(access(path, R_OK) == -1)
+            {
+                error(403);
+                continue;
+            }
  
             // TODO: extract path's extension
-            char extension[] = "TODO";
+            needle = strchr(path, '.');
+            int extSize = (needle == NULL) ? 1 : (path + strlen(path) - needle) ;
+            char extension[extSize];
+            if (needle != NULL)
+            {
+                strncpy(extension, needle + 1, path + strlen(path) - needle);
+                extension[path + strlen(path) - needle] = '\0';
+            }
+            else
+            {
+                extension[0] = '\0';
+            }
 
             // dynamic content
             if (strcasecmp("php", extension) == 0)
@@ -281,6 +324,33 @@ int main(int argc, char* argv[])
                 }
 
                 // TODO: respond to client
+                if (dprintf(cfd, "HTTP/1.1 200 OK\r\n") < 0)
+                {
+                    continue;
+                }
+                if (dprintf(cfd, "Connection: close\r\n") < 0)
+                {
+                    continue;
+                }
+                if (dprintf(cfd, "Content-Length: %i\r\n", length) < 0)
+                {
+                    continue;
+                }
+                if (dprintf(cfd, "Content-Type: %s\r\n", type) < 0)
+                {
+                    continue;
+                }
+    
+                // respond with CRLF
+                if (dprintf(cfd, "\r\n") < 0)
+                {
+                    return false;
+                }
+
+                if (write(cfd, body, length) == -1)
+                {
+                    continue;
+                }
             }
            
             // announce OK
@@ -481,19 +551,19 @@ void handler(int signal)
  */
 const char* lookup(const char* extension)
 {
-    if(strcmp(extension, "css")) 
+    if(strcmp(extension, "css") == 0) 
         return "text/css";
-    if(strcmp(extension, "html")) 
+    if(strcmp(extension, "html") == 0) 
         return "text/html";
-    if(strcmp(extension, "gif")) 
+    if(strcmp(extension, "gif") == 0) 
         return "image/gif";
-    if(strcmp(extension, "ico")) 
+    if(strcmp(extension, "ico") == 0) 
         return "image/x-icon";
-    if(strcmp(extension, "jpg")) 
+    if(strcmp(extension, "jpg") == 0) 
         return "image/jpeg";
-    if(strcmp(extension, "js")) 
+    if(strcmp(extension, "js") == 0) 
         return "text/javascript";
-    if(strcmp(extension, "png")) 
+    if(strcmp(extension, "png") == 0) 
         return "image/png";
 
     return NULL;
