@@ -113,7 +113,7 @@ int main(void)
 
     char *paddleDirection = malloc(sizeof(char) * 10);
   
-    Paddle *bat = (Paddle *)malloc(sizeof(Paddle));
+    Paddle *bat = (Paddle *) malloc(sizeof(Paddle));
     bat->paddle = paddle;
     bat->direction = paddleDirection;
     bat->x = getX(paddle);
@@ -250,7 +250,7 @@ void resetPaddle(Paddle *paddle)
 void ballHitsBrick(Velocity *velocity, 
         GWindow *window, 
         GObject *brick, 
-        GLabel *label,
+        GLabel *label, 
         int *score, 
         int *bricksCount)
 {
@@ -269,7 +269,7 @@ void ballHitsBrick(Velocity *velocity,
  */
 int hasBallHitTheSides(GOval *ball, GWindow *window)
 {
-    if (getX(*ball) <= 0 ||
+    if (getX(*ball) <= 0 || 
         getX(*ball) + getWidth(*ball) >= getWidth(*window))
     {
         return 1;
@@ -356,7 +356,10 @@ void initBricks(GWindow window)
  */
 GOval initBall(GWindow window)
 {
-    GOval ball = newGOval(WIDTH / 2 - RADIUS, HEIGHT / 2 - RADIUS, RADIUS * 2, RADIUS * 2);
+    GOval ball = newGOval(WIDTH / 2 - RADIUS, 
+            HEIGHT / 2 - RADIUS, 
+            RADIUS * 2, 
+            RADIUS * 2);
     setColor(ball, "BLACK");
     setFilled(ball, true);
     add(window, ball);

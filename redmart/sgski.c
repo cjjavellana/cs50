@@ -190,7 +190,7 @@ void evaluateSolution(solution *sol, const char* path) {
 void readfile(matrix *m, FILE* fp) {
     int rowIndex = 0;
     size_t len = 0;
-    size_t read;
+    size_t read = -1;
     char *line;
     
     while ((read = getline(&line, &len, fp) != -1)) {
