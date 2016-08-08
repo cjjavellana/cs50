@@ -27,13 +27,7 @@ int main(int argc, char *argv[])
             partition(p, temp_max, prefix);
             printf("%s\n", prefix);
             memset(prefix, '\0', sizeof(prefix));
-            if(p <= 1)
-            {
-                break;
-            }
-            
-            temp_max--;
-        } while(temp_max > 0);
+        } while(--temp_max > 0 && p > 1);
         
         
         max--;            
