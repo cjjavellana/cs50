@@ -8,7 +8,7 @@
 #include "snake.h"
 #include "pivot_point.h"
 
-static void update_coordinates(const int direction, int *x, int *y);
+//static void update_coordinates(const int direction, int *x, int *y);
 
 int main(void)
 {
@@ -58,84 +58,15 @@ int main(void)
     pivot2->next = pivot3;
     pivot3->next = pivot4;
 
-    while(s->head_coord.x < col)
-    {
-        int x = s->head_coord.x;
-        int y = s->head_coord.y;
-        int direction = s->direction;
+    gameplay *g = malloc(sizeof(gameplay));
+    g->s = s;
+    g->pivot = pivot1;
+    g->world_width = (short) col;
+    g->world_height = (short) row;
+    g->speed = 1.0f;
 
-        mvprintw(0, 0, "Max rows: %d; Max Cols: %d\n", row, col);    
-        mvprintw(1, 0, "Current row: %d; Current Col: %d\n", y, x);    
-        mvprintw(2, 0, "Current direction: %d;", direction);    
-
-        for(int i = 0; i < s->body_length + 1; i++)
-        {
-            if(i == 0) mvprintw(y, x, "%s", "Q");
-            else  mvprintw(y, x, "%s", "X");
-
-            pivot_point *pp = pivot1;
-            while(pp != NULL)
-            {
-                if(x == pp->coord.x && 
-                        y == pp->coord.y)
-                {
-                    s->direction = pp->pivot_direction;
-                    switch(pp->previous_direction)
-                    {
-                        case DIRECTION_RIGHT:
-                            direction = DIRECTION_LEFT;
-                            break;
-                        case DIRECTION_LEFT:
-                            direction = DIRECTION_RIGHT;
-                            break;
-                        case DIRECTION_UP:
-                            direction = DIRECTION_DOWN;
-                            break;
-                        case DIRECTION_DOWN:
-                            direction = DIRECTION_UP;
-                            break;
-                    }
-                    
-                    //delete the pivot point if the tail has passed
-                    //through it
-                    if(i == (s->body_length - 1))
-                    {
-                        if(pp->previous != NULL)
-                        {
-                        //    pp->previous->next = NULL;
-                        }
-
-                        //free(pp);
-                        break;
-                    }
-                }
-
-                pp = pp->next;
-            }
-
-            update_coordinates(direction, &x, &y);
-        }
-        refresh();
-        sleep(1);
-
-        switch(s->direction)
-        {
-            case DIRECTION_RIGHT:
-                s->head_coord.x = s->head_coord.x + 1;
-                break;
-            case DIRECTION_LEFT:
-                s->head_coord.x = s->head_coord.x - 1;
-                break;
-            case DIRECTION_UP:
-                s->head_coord.y = s->head_coord.y - 1;
-                break;
-            case DIRECTION_DOWN:
-                s->head_coord.y = s->head_coord.y + 1;
-                break;
-        }
-
-        clear();
-    }
+    pthread_t pth;
+    pthread_create(&pth, NULL, *snake_main, g);
 
     int c;
     while((c = getch()) != 'q')
@@ -156,6 +87,11 @@ int main(void)
                 break;
        }
     }
+    
+    // set the condition to exit thread loop
+    g->s->head_coord.x = 255;
+
+    pthread_join(pth, NULL);
 
     free(s);
 
@@ -171,6 +107,7 @@ int main(void)
     return 0;
 }
 
+/*
 static void update_coordinates(const int direction, int *x, int *y)
 {
     switch(direction)
@@ -189,3 +126,4 @@ static void update_coordinates(const int direction, int *x, int *y)
             break;
     }
 }
+*/
