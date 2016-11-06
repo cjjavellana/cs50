@@ -8,8 +8,6 @@
 #include "snake.h"
 #include "pivot_point.h"
 
-//static void update_coordinates(const int direction, int *x, int *y);
-
 int main(void)
 {
     //int delay_msec = 1000; // 1 sec delay
@@ -106,24 +104,3 @@ int main(void)
 
     return 0;
 }
-
-/*
-static void update_coordinates(const int direction, int *x, int *y)
-{
-    switch(direction)
-    {
-        case DIRECTION_RIGHT:
-            *x = *x - 1;
-            break;
-        case DIRECTION_LEFT:
-            *x = *x + 1;;
-            break;
-        case DIRECTION_UP:
-            *y = *y + 1;
-            break;
-        case DIRECTION_DOWN:
-            *y = *y - 1;
-            break;
-    }
-}
-*/
