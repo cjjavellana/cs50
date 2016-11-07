@@ -1,6 +1,9 @@
+#define _BSD_SOURCE
+
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "snake.h"
 #include "pivot_point.h"
@@ -68,6 +71,10 @@ void *snake_main(void *args)
     gameplay *game = (gameplay *) args;
     snake *s = game->s;
 
+    struct timespec tim;
+    tim.tv_sec  = 0;
+    tim.tv_nsec = 500000000L;
+
     while(s->head_coord.x < game->world_width) 
     {
         int x = s->head_coord.x;
@@ -80,8 +87,8 @@ void *snake_main(void *args)
 
         for(int i = 0; i < s->body_length + 1; i++)
         {
-            if(i == 0) mvprintw(y, x, "%s", "Q");
-            else  mvprintw(y, x, "%s", "X");
+            move(y,x);
+            addch(ACS_CKBOARD);
 
             pivot_point *pp = game->pivot;
             while(pp != NULL)
@@ -126,7 +133,7 @@ void *snake_main(void *args)
             update_coordinates(direction, &x, &y);
         }
         refresh();
-        sleep(1);
+        nanosleep(&tim, NULL);
 
         snake_move_head(s);
         clear();

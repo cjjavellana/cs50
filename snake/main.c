@@ -8,7 +8,7 @@
 #include "snake.h"
 #include "pivot_point.h"
 
-int main(void)
+int main(int argc, char *argv[])
 {
     //int delay_msec = 1000; // 1 sec delay
     
