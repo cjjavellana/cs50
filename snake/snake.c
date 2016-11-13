@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "snake.h"
@@ -81,9 +82,27 @@ void *snake_main(void *args)
         int y = s->head_coord.y;
         int direction = s->direction;
 
+        // draw border - x axis
+        for(int i = 0; i <= game->world_width; i++)
+        {
+           move(2,i);
+           addch(ACS_HLINE);
+           
+           move(game->world_height - 1, i);
+           addch(ACS_HLINE);
+        }
+
+        for(int i = 2; i <= game->world_height - 1; i++)
+        {
+           move(i, 0);
+           addch(ACS_VLINE);
+
+           move(i, game->world_width - 1);
+           addch(ACS_VLINE);
+        }
+
         mvprintw(0, 0, "Max rows: %d; Max Cols: %d\n", game->world_height, game->world_width);
         mvprintw(1, 0, "Current row: %d; Current Col: %d\n", y, x);    
-        mvprintw(2, 0, "Current direction: %d;", direction);
 
         for(int i = 0; i < s->body_length + 1; i++)
         {
@@ -115,14 +134,33 @@ void *snake_main(void *args)
                     
                     //delete the pivot point if the tail has passed
                     //through it
-                    if(i == (s->body_length))
+                    if(i == s->body_length)
                     {
-                        if(pp->previous != NULL)
+                        mvprintw(2, 0, "Deleting: %d, %d;", pp->coord.x, pp->coord.y);
+                        if(pp->previous != NULL && pp->next != NULL)
                         {
-                        //    pp->previous->next = NULL;
+                            pp->previous->next = pp->next;
+                            pivot_point *tmp = pp->next;
+                            free(pp);
+                            pp = tmp;
+                        }
+                        else if (pp->previous == NULL && pp->next != NULL)
+                        {
+                           game->pivot = pp->next;
+
+                           pivot_point *tmp = pp->next;
+                           free(pp);
+                           pp = tmp;
+                        }
+                        else if(pp->previous != NULL && pp->next == NULL)
+                        {
+                            pp->previous->next = NULL;
+
+                            pivot_point *tmp = pp->previous;
+                            free(pp);
+                            pp = tmp;
                         }
 
-                        //free(pp);
                         break;
                     }
                 }
@@ -139,6 +177,8 @@ void *snake_main(void *args)
         clear();
     }
 
+    // set game over bit
+    game->gameover = 0x1; 
     return NULL;
 }
 

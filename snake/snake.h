@@ -28,9 +28,10 @@ typedef struct {
 typedef struct {
     snake *s;
     struct pivot_point *pivot;
-    short world_width;
-    short world_height;
+    unsigned short world_width;
+    unsigned short world_height;
     float speed;
+    unsigned char gameover;
 } gameplay;
 
 /**

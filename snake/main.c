@@ -26,21 +26,21 @@ int main(int argc, char *argv[])
     s->direction = DIRECTION_RIGHT;
 
     pivot_point *pivot1 = malloc(sizeof(pivot_point));
-    pivot1->coord.x = col - 1;
+    pivot1->coord.x = col - 2;
     pivot1->coord.y = 3;
     pivot1->pivot_direction = DIRECTION_DOWN;
     pivot1->previous_direction = DIRECTION_LEFT;
 
     pivot_point *pivot2 = malloc(sizeof(pivot_point));
-    pivot2->coord.x = col - 1;
-    pivot2->coord.y = row - 1;
+    pivot2->coord.x = col - 2;
+    pivot2->coord.y = row - 2;
     pivot2->pivot_direction = DIRECTION_LEFT;
     pivot2->previous_direction = DIRECTION_UP;
     pivot2->previous = pivot1;
 
     pivot_point *pivot3 = malloc(sizeof(pivot_point));
     pivot3->coord.x = 1;
-    pivot3->coord.y = row - 1;
+    pivot3->coord.y = row - 2;
     pivot3->pivot_direction = DIRECTION_UP;
     pivot3->previous_direction = DIRECTION_RIGHT;
     pivot3->previous = pivot2;
@@ -59,15 +59,16 @@ int main(int argc, char *argv[])
     gameplay *g = malloc(sizeof(gameplay));
     g->s = s;
     g->pivot = pivot1;
-    g->world_width = (short) col;
-    g->world_height = (short) row;
+    g->world_width = (unsigned short) col;
+    g->world_height = (unsigned short) row;
     g->speed = 1.0f;
+    g->gameover = 0x0;
 
     pthread_t pth;
     pthread_create(&pth, NULL, *snake_main, g);
 
     int c;
-    while((c = getch()) != 'q')
+    while((c = getch()) != 'q' && !g->gameover)
     {
         switch(c)
         {
